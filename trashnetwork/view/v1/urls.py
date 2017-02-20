@@ -20,7 +20,7 @@ urlpatterns = [
     # Mobile
     url(r'^mobile/account/login', mobile_account.login),
     url(r'^mobile/account/logout', mobile_account.logout),
-    url(r'^mobile/account/check_login', mobile_account.check_login),
+    url(r'^mobile/account/check_login/(?P<user_id>[0-9]+)', mobile_account.check_login),
     url(r'^mobile/account/user_info/by_id/(?P<user_id>[0-9]+)',
         mobile_account.get_user_info_by_id),
 ]

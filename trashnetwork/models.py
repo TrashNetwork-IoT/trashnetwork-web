@@ -10,7 +10,7 @@ ACCOUNT_TYPE_MANAGER = 'M'
 
 class Account(models.Model):
     user_id = models.BigIntegerField(primary_key=True)
-    phone_number = models.CharField(max_length=20, null=False)
+    phone_number = models.CharField(max_length=20)
     password = models.CharField(max_length=20, null=False)
     name = models.CharField(max_length=25, unique=True, null=False)
     gender = models.CharField(max_length=1, choices=(

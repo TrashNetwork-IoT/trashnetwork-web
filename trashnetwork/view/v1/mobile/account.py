@@ -40,18 +40,19 @@ def token_check(req: Request, permission_limit: str = None):
 @api_view(['PUT'])
 def login(request: Request):
     try:
-        account = Account.objects.filter(phone_number=request.data['phone_number']).get()
-        if not account.password == request.data['password']:
-            raise CheckException(result_code=result_code.MOBILE_LOGIN_INCORRECT_PASSWORD,
-                                 message=_('Incorrect password'), status=status.HTTP_401_UNAUTHORIZED)
-        token_str = authentication.generate_token(account.user_id)
-        cache.set(CACHE_KEY_MOBILE_TOKEN_PREFIX + str(account.user_id), token_str, MOBILE_TOKEN_VALID_HOURS * 3600)
-        res = view_utils.get_json_response(result_code=result_code.SUCCESS, message=_('Login successfully'),
-                                           status=status.HTTP_201_CREATED, token=token_str)
-        return res
-    except Account.DoesNotExist:
+        account = Account.objects.filter(user_id=int(request.data['user_id'])).get()
+    except (ValueError, Account.DoesNotExist):
         raise CheckException(result_code=result_code.MOBILE_LOGIN_USER_NOT_EXIST, message=_('User does not exist'),
                              status=status.HTTP_401_UNAUTHORIZED)
+
+    if not account.password == request.data['password']:
+        raise CheckException(result_code=result_code.MOBILE_LOGIN_INCORRECT_PASSWORD,
+                             message=_('Incorrect password'), status=status.HTTP_401_UNAUTHORIZED)
+    token_str = authentication.generate_token(account.user_id)
+    cache.set(CACHE_KEY_MOBILE_TOKEN_PREFIX + str(account.user_id), token_str, MOBILE_TOKEN_VALID_HOURS * 3600)
+    res = view_utils.get_json_response(result_code=result_code.SUCCESS, message=_('Login successfully'),
+                                       status=status.HTTP_201_CREATED, token=token_str)
+    return res
 
 
 @api_view(['GET'])
