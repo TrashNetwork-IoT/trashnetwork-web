@@ -4,7 +4,7 @@ from trashnetwork import settings
 
 
 def generate_token(user_id: int):
-    value = signing.dumps({'user_id': str(user_id)}, salt=settings.SECRET_KEY)
+    value = signing.dumps({'user_id': user_id}, salt=settings.SECRET_KEY)
     return value
 
 

@@ -23,4 +23,5 @@ urlpatterns = [
     url(r'^mobile/account/check_login/(?P<user_id>[0-9]+)', mobile_account.check_login),
     url(r'^mobile/account/user_info/by_id/(?P<user_id>[0-9]+)',
         mobile_account.get_user_info_by_id),
+    url(r'^mobile/account/all_group_users', mobile_account.get_all_group_users),
 ]

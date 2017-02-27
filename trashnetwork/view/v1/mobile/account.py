@@ -80,3 +80,14 @@ def get_user_info_by_id(req: Request, user_id: str):
     except Account.DoesNotExist:
         raise CheckException(result_code=result_code.MOBILE_USER_INFO_NOT_FOUND, message=_('User does not exist'),
                              status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+def get_all_group_users(req: Request):
+    user = token_check(req=req)
+    user_list = []
+    for u in Account.objects.all():
+        if u.user_id == user.user_id:
+            continue
+        user_list.append(view_utils.get_user_info_dict(user=u))
+    return view_utils.get_json_response(user_list=user_list)
