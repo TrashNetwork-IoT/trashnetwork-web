@@ -18,6 +18,6 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    # v1 API
+    # API v1
     url(r'^trashnetwork/v1/', include('trashnetwork.view.v1.urls')),
 ]
