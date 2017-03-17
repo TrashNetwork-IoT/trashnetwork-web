@@ -4,7 +4,7 @@ function show_help(){
     echo "Usage: sync.sh <remote_host_address> [remote_path] [remote_user]"
 }
 
-remote_path=/home/happyyoung/trashnetwork
+remote_path=/home/happyyoung/trashnetwork-web
 remote_user=happyyoung
 
 if [ $# -gt 0 ]; then
