@@ -16,7 +16,7 @@ def get_datetime(unix_timestamp_ms: int = 0):
     return datetime.datetime.fromtimestamp(unix_timestamp_ms / 1000)
 
 
-def get_user_info_dict(user: models.Account):
+def get_cleaning_user_info_dict(user: models.CleaningAccount):
     portrait_base64 = base64.b64encode(user.portrait).decode()
     result = dict(name=user.name, gender=user.gender, account_type=user.account_type,
                   portrait=portrait_base64, user_id=user.user_id, phone_number=user.phone_number)

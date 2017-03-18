@@ -41,7 +41,7 @@ python ./manage.py compilemessages
 
 ```shell
 # Start server at port 23000
-python ./manage.py runserver 0.0.0.0:23000 --noreload
+python ./manage.py runserver 0.0.0.0:23000
 ```
 ## Start Server at Backend
 
