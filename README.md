@@ -47,6 +47,8 @@ python ./manage.py runserver 0.0.0.0:23000
 
 You can execute `start_server.sh`  to start server at port 23000 at backend directly.
 
+And you can execute `tmux attach -t TrashNetwork` to view the log in real time.
+
 ## Sync Code to Remote Host
 
 You can use `sync.sh` to sync your code to remote host. This script will sync your code via `rsync`.
