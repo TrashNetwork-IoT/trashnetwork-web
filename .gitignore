@@ -90,3 +90,5 @@ ENV/
 
 trashnetwork/migrations/*
 .idea/*
+
+sync_config.sh

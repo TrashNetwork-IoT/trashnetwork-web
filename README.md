@@ -51,12 +51,14 @@ You can execute `start_server.sh`  to start server at port 23000 at backend dire
 
 You can use `sync.sh` to sync your code to remote host. This script will sync your code via `rsync`.
 
-Basic usage of `sync.sh`:
+Write into sync_config.sh as below to configure it.
 
-```shell
-sync.sh ${REMOTE_HOST}
+```
+remote_path=/home/happyyoung/trashnetwork-web
+remote_user=happyyoung
+remote_host=127.0.0.1
 ```
 
-`$REMOTE_HOST` refer to address of remote host that you want to sync code to.
+Lines in sync_config.sh will override the configuration set in sync.sh.
 
-By default, remote user is `happyyoung`, and syncing path on remote host is `/home/happyyoung/trashnetwork-web`.
+After that, you could sync your code.
