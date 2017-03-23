@@ -201,6 +201,8 @@ Successful response example:
 
 This API should return info of all groups that the requester belongs to.
 
+**By default, there is a fixed group named "Work Group" which includes all users.**
+
 ```
 GET cleaning/group/all_groups
 ```
@@ -438,9 +440,257 @@ POST cleaning/work/new_record
 | 422              | 100204      | Too far away from specific trash  |
 | 201              | 0           | Post new work record successfully |
 
-## 2. Public API
+## 2. API for recycle client
 
-### 2.1 Query trashes
+### 2.1 Account API
+
+#### 2.1.1 Sign in
+
+```
+PUT recycle/account/login
+```
+
+##### Request field
+
+- `user_name`: user name, string.
+- `password`: password, string.
+
+##### Response
+
+| HTTP Status Code | result_code | message             |
+| ---------------- | ----------- | ------------------- |
+| 401              | 200001      | User does not exist |
+| 401              | 200002      | Incorrect password  |
+| 201              | 0           | Login successfully  |
+
+If login successfully, the response should contain new generated token and basic user info. The token can be used for authentication later.
+
+Basic user info should contain:
+
++ `user_id`: user ID, long integer.
+
++ `credit`: credit the user owns currently, integer.
+
+Successful response example:
+
+```json
+{
+  "result_code": 0,
+  "message": "Login successfully",
+  "token": "7457052ea6f1f56eb5d830353f36bbcace59dac3",
+  "user": {
+    "user_id": 123456,
+    "credit": 0
+  }
+}
+```
+
+#### 2.1.2 Sign up
+
+```
+POST recycle/account/register
+```
+
+##### Request field
+
++ `user_name`: user name, string.
+
++ `password`: password, the password must not be fewer than 6 characters and not be more than 20 characters in length, string.
+
++ `email`: email address, string.
+
+##### Response
+
+| HTTP Status Code | result_code      | message                           |
+| ---------------- | ---------------- | --------------------------------- |
+| 422              | 200011           | User name has been used           |
+| 422              | 200012           | Password is too short or too long |
+| 422              | 200013(Reversed) | Illegal password format           |
+| 422              | 200014           | Illegal email address             |
+| 201              | 0                | Sign up successfully              |
+
+If register successfully, the response should contain new generated token and basic user info. In other word, the response is similar with that of login.
+
+#### 2.1.3 * Logout
+
+```
+DELETE recycle/account/logout
+```
+
+##### Response
+
+| HTTP Status Code | result_code | message |
+| ---------------- | ----------- | ------- |
+| 204              | -           | -       |
+
+#### 2.1.4 * Check login status
+
+Check if a token corresponding to the given user is valid.
+
+```
+GET cleaning/account/check_login/{user_id}
+```
+
++ `user_id`: ID of the user to check, long integer.
+
+##### Response
+
+| HTTP Status Code | result_code | message                        |
+| ---------------- | ----------- | ------------------------------ |
+| 401              | 401         | Token does not match this user |
+| 200              | 0           | -                              |
+
+#### 2.1.5 * Query Self Info
+
+```
+GET recycle/account/self
+```
+
+##### Response
+
+| HTTP Status Code | result_code | message |
+| ---------------- | ----------- | ------- |
+| 200              | 0           | -       |
+
+Response should contain complete user info.
+
+Complete user info should contain:
+
++ Basic user info
+
+Successful response example:
+
+```json
+{
+  "result_code": 0,
+  "message": "",
+  "user": {
+    "user_id": 123456,
+    "credit": 0
+  }
+}
+```
+
+### 2.2 Credit Record API
+
+#### 2.2.1 * Query credit record
+
+1. Query at most N latest records until now.
+
+```
+GET recycle/credit/record/{limit_num}
+```
+
+2. Query at most N latest records until a specific end time point.
+
+```
+GET recycle/credit/record/{end_time}/{limit_num}
+```
+
+3. Query at most N latest records during a specific time period.
+
+```
+GET recycle/credit/record/{start_time}/{end_time}/{limit_num}
+```
+
+- `{start_time}`: start time point, UNIX timestamp format(second unit).
+- `{end_time}`: end time point, UNIX timestamp format(second unit).
+- `{limit_num}`: the maximum number of records that this API can return, integer.
+
+##### Response
+
+| HTTP Status Code | result_code | message                 |
+| ---------------- | ----------- | ----------------------- |
+| 404              | 200101      | Credit record not found |
+| 200              | 0           | -                       |
+
+Successful response should contain a list consisting of info of credit records, and records should be sort by post time(newest to oldest).
+
+Every work record should contain following fields:
+
+- `good_description`: good description, string.
+- `quantity`: quantity of good, integer.
+- `credit`: credit number relate to this record, integer. If user gain credits in this record, it should be a positive number, otherwise negative.
+- `record_time`: record time, UNIX timestamp format(second unit).
+
+Successful response example:
+
+```json
+{
+  "result_code": 0,
+  "message": "",
+  "credit_record_list": [
+    {
+      "good_description": "Bottle recycle",
+      "quantity": 1,
+      "credit": 1,
+      "record_time": 1489827858
+    }
+  ]
+}
+```
+
+#### 2.2.2 * Post new credit record(bottle recycle)
+
+When recycling bottles, the user should not exceed **50 meters** distant from the given trash.
+
+```
+POST recycle/credit/record/new/bottle_recycle
+```
+
+##### Request field
+
++ `trash_id`: trash ID, long integer.
++ `quantity`: quantity of bottles, integer.
++ `longitude`: longitude of user's current location, double.
++ `latitude`: latitude of user's current location, double.
+
+##### Response
+
+| HTTP Status Code | result_code | message                                  |
+| ---------------- | ----------- | ---------------------------------------- |
+| 404              | 200111      | Trash not found                          |
+| 422              | 200112      | This trash is not a bottle recycle point |
+| 422              | 200113      | Illegal location                         |
+| 422              | 200114      | Too far away from specific trash         |
+| 201              | 0           | Recycle bottle successfully              |
+
+Response should contain credits that the user gain by recycling bottles this time.
+
+Successful response example:
+
+```json
+{
+  "result_code": 0,
+  "message": "Recycle bottle successfully",
+  "credit": 3
+}
+```
+
+### 2.3 Feedback API
+
+#### 2.3.1 (*) Post new feedback
+
+(Optional authentication) If requester does not provide token(**but it does not mean that requester can provide an invalid token**), the feedback will be regarded as being post by an anonymous user.
+
+```
+POST recycle/feedback/new_feekback
+```
+
+##### Request field
+
++ `title`: title of new feedback, string.
++ `text_content`: text content of new feedback, string.
+
+##### Response
+
+| HTTP Status Code | result_code | message                    |
+| ---------------- | ----------- | -------------------------- |
+| 201              | 0           | Post feedback successfully |
+
+## 3. Public API
+
+### 3.1 Query trashes
 
 ```
 GET public/trash/all_trashes
@@ -458,8 +708,9 @@ Every trash should contain following fields:
 
 + `trash_id`: trash ID, long integer.
 + `description`: literal description of the trash, string.
-+ `longitude`: longitude of the trash's location.
-+ `latitude`: latitude of the trash's location.
++ `longitude`: longitude of the trash's location, double.
++ `latitude`: latitude of the trash's location, double.
++ `bottle_recycle`: Whether this trash is a bottle recycle point, boolean.
 
 ```json
 {
@@ -470,8 +721,69 @@ Every trash should contain following fields:
       "trash_id": 1,
       "description": "Trash on layer 2, No.9 student apartment",
       "longitude": 116.362249,
-      "latitude": 39.970163
+      "latitude": 39.970163,
+      "bottle_recycle": true
     }
   ]
 }
 ```
+
+### 3.2 Query feedbacks
+
+1. Query at most N latest feedbacks until now.
+
+```
+GET public/feedback/feedbacks/{limit_num}
+```
+
+2. Query at most N latest feedbacks until a specific end time point.
+
+```
+GET public/feedback/feedbacks/{end_time}/{limit_num}
+```
+
+3. Query at most N latest feedbacks during a specific time period.
+
+```
+GET public/feedback/feedbacks/{start_time}/{end_time}/{limit_num}
+```
+
+- `{start_time}`: start time point, UNIX timestamp format(second unit).
+- `{end_time}`: end time point, UNIX timestamp format(second unit).
+- `{limit_num}`: the maximum number of records that this API can return, integer.
+
+##### Response
+
+| HTTP Status Code | result_code | message     |
+| ---------------- | ----------- | ----------- |
+| 404              | 200201      | No feedback |
+| 200              | 0           | -           |
+
+Successful response should contain a list consisting of info of feedbacks and they should be sort by post time(newest to oldest).
+
+Every feedback should contain following fields:
+
++ `user_name`: (if any) user name of poster, string.
++ `title`: title of feedback, string.
++ `text_content`: text content of feedback, string.
+
+- `feedback_time`: time when the feedback was post, UNIX timestamp format(second unit).
+
+Successful response example:
+
+```json
+{
+  "result_code": 0,
+  "message": "",
+  "feedback_list": [
+    {
+      "user_name": "Test user",
+      "title": "Feedback Title",
+      "content": "Feedback content...",
+      "feedback_time": 1489827858
+    }
+  ]
+}
+```
+
+#### 
