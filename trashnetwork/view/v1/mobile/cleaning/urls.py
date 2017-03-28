@@ -12,8 +12,8 @@ urlpatterns = [
 
     # Mobile - Cleaning - Group
     url(r'^group/all_groups$', mobile_group.all_groups),
-    url(r'^group/bulletin/(?P<group_id>\d+)/(?P<limit_num>\d+)$', mobile_group.bulletin2),
-    url(r'^group/bulletin/(?P<group_id>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$', mobile_group.bulletin3),
-    url(r'^group/bulletin/(?P<group_id>\d+)/(?P<start_time>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$', mobile_group.bulletin4),
+    url(r'^group/bulletin/(?P<group_id>\d+)/(?P<limit_num>\d+)$', mobile_group.bulletin),
+    url(r'^group/bulletin/(?P<group_id>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$', mobile_group.bulletin),
+    url(r'^group/bulletin/(?P<group_id>\d+)/(?P<start_time>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$', mobile_group.bulletin),
     url(r'^group/new_bulletin', mobile_group.new_bulletin)
 ]

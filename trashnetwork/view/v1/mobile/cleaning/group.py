@@ -1,12 +1,11 @@
 from django.utils.translation import ugettext as _
-from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
-from rest_framework.response import Response
 from base64 import b64encode
 
 from trashnetwork.models import *
+from trashnetwork.util.view_utils import general_time_limit
 from trashnetwork.view.check_exception import CheckException
 from trashnetwork.view import result_code
 from trashnetwork.util import view_utils
@@ -29,21 +28,16 @@ def all_groups(req: Request):
 
 
 @api_view(['GET'])
-def bulletin2(req: Request, group_id, limit_num):
-    pass
+def bulletin(req: Request, limit_num, **kwargs):
+    bulletins = []
+    for bulletin in CleaningBulletin.objects.filter(general_time_limit(**kwargs)).order_by('-timestamp')[:limit_num]:
+        bulletin_object = dict(poster_id=bulletin.poster_id,
+                               post_time=bulletin.timestamp.timestamp(),
+                               title=bulletin.title,
+                               text_content=bulletin.text)
+        bulletins.append(bulletin_object)
+    return view_utils.get_json_response(bulletin_list=bulletins)
 
-
-@api_view(['GET'])
-def bulletin3(req: Request, group_id, end_time, limit_num):
-    pass
-
-
-@api_view(['GET'])
-def bulletin4(req: Request, group_id, start_time, end_time, limit_num):
-    pass
-
-def bulletin(req: Request, q: Q):
-    pass
 
 @api_view(['POST'])
 def new_bulletin(req: Request):

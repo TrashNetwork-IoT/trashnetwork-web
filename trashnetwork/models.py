@@ -39,6 +39,7 @@ class CleaningGroupMembership(models.Model):
     user = models.ForeignKey(CleaningAccount, on_delete=models.CASCADE)
 
 
+# NOTE: All timestamp property must be named timestamp
 class CleaningBulletin(models.Model):
     poster = models.ForeignKey(CleaningAccount, on_delete=models.SET_NULL)
     group = models.ForeignKey(CleaningGroup, on_delete=models.CASCADE)
