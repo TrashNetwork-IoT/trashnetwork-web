@@ -37,3 +37,5 @@ def register_test_account(sender, **kwargs):
 if sys.argv[1] == 'migrate':
     from django.db.models.signals import post_migrate
     post_migrate.connect(register_test_account)
+elif sys.argv[1] == 'runserver':
+    default_app_config = 'trashnetwork.apps.TrashNetworkConfig'

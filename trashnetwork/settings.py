@@ -128,6 +128,14 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# MQTT Broker
+TN_MQTT_BROKER = {
+    'HOST': 'localhost',
+    'PORT': 23883,
+    'CLIENT_ID': 'trashnetwork_webserver_user:admin',
+    'USERNAME': 'trashnetwork_webserver_user:admin',
+    'PASSWORD': '123456'
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
