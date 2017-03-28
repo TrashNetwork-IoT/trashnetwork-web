@@ -26,3 +26,22 @@ class CleaningAccount(models.Model):
 
     class Meta:
         db_table = 'cleaning_account'
+
+
+class CleaningGroup(models.Model):
+    group_id = models.BigIntegerField(primary_key=True)
+    name = models.CharField(max_length=50, null=False)
+    portrait = models.BinaryField(null=False)
+
+
+class CleaningGroupMembership(models.Model):
+    group = models.ForeignKey(CleaningGroup, on_delete=models.CASCADE)
+    user = models.ForeignKey(CleaningAccount, on_delete=models.CASCADE)
+
+
+class CleaningBulletin(models.Model):
+    poster = models.ForeignKey(CleaningAccount, on_delete=models.SET_NULL)
+    group = models.ForeignKey(CleaningGroup, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    title = models.CharField(max_length=60, null=False)
+    text = models.TextField(null=False)
