@@ -11,7 +11,7 @@ from trashnetwork.view import result_code
 from trashnetwork.util import view_utils
 from trashnetwork.view import authentication
 
-CACHE_KEY_MOBILE_TOKEN_PREFIX = 'mobile_token_'
+CACHE_KEY_MOBILE_CLEANING_TOKEN_PREFIX = 'mobile_cleaning_token/'
 MOBILE_TOKEN_VALID_HOURS = 120
 MOBILE_CLIENT_TYPE_CLEANING = 'mobile_cleaning'
 
@@ -24,11 +24,11 @@ def token_check(req: Request, permission_limit: str = None):
     except Exception:
         raise CheckException(status=status.HTTP_401_UNAUTHORIZED, result_code=status.HTTP_401_UNAUTHORIZED,
                              message=_('Invalid token'))
-    cache_token = cache.get(CACHE_KEY_MOBILE_TOKEN_PREFIX + str(user_id))
+    cache_token = cache.get(CACHE_KEY_MOBILE_CLEANING_TOKEN_PREFIX + str(user_id))
     if token != cache_token or token_json['mobile_type'] != MOBILE_CLIENT_TYPE_CLEANING:
         raise CheckException(status=status.HTTP_401_UNAUTHORIZED, result_code=status.HTTP_401_UNAUTHORIZED,
                              message=_('Invalid token'))
-    cache.set(CACHE_KEY_MOBILE_TOKEN_PREFIX + str(user_id), cache_token, MOBILE_TOKEN_VALID_HOURS * 3600)
+    cache.set(CACHE_KEY_MOBILE_CLEANING_TOKEN_PREFIX + str(user_id), cache_token, MOBILE_TOKEN_VALID_HOURS * 3600)
     if permission_limit is not None:
         user = CleaningAccount.objects.filter(user_id=user_id).get()
         if user.account_type != permission_limit:
@@ -51,7 +51,7 @@ def login(request: Request):
         raise CheckException(result_code=result_code.MC_LOGIN_INCORRECT_PASSWORD,
                              message=_('Incorrect password'), status=status.HTTP_401_UNAUTHORIZED)
     token_str = authentication.generate_token(user_id=account.user_id, mobile_type=MOBILE_CLIENT_TYPE_CLEANING)
-    cache.set(CACHE_KEY_MOBILE_TOKEN_PREFIX + str(account.user_id), token_str, MOBILE_TOKEN_VALID_HOURS * 3600)
+    cache.set(CACHE_KEY_MOBILE_CLEANING_TOKEN_PREFIX + str(account.user_id), token_str, MOBILE_TOKEN_VALID_HOURS * 3600)
     res = view_utils.get_json_response(result_code=result_code.SUCCESS, message=_('Login successfully'),
                                        status=status.HTTP_201_CREATED, token=token_str)
     return res
@@ -69,7 +69,7 @@ def check_login(req: Request, user_id: str):
 @api_view(['DELETE'])
 def logout(req: Request):
     user = token_check(req=req)
-    cache.delete(CACHE_KEY_MOBILE_TOKEN_PREFIX + str(user.user_id))
+    cache.delete(CACHE_KEY_MOBILE_CLEANING_TOKEN_PREFIX + str(user.user_id))
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 

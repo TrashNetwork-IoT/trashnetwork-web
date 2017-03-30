@@ -1,13 +1,16 @@
 import os
 import sys
+
 from trashnetwork.settings import BASE_DIR
 
 
 def register_test_account(sender, **kwargs):
     from trashnetwork.models import CleaningAccount
+    from trashnetwork.models import RecycleAccount
 
     test_cleaner_account = CleaningAccount.objects.filter(user_id=123456)
     test_manager_account = CleaningAccount.objects.filter(user_id=233333)
+    test_recycle_account = RecycleAccount.objects.filter(user_name='RecycleTest')
     if not test_cleaner_account or not test_manager_account:
         img_file = open(os.path.join(BASE_DIR, 'trashnetwork/default_portrait.png'), 'rb')
         img_bin = bytes(img_file.read())
@@ -20,7 +23,7 @@ def register_test_account(sender, **kwargs):
                                                    name='Test Cleaner 1',
                                                    portrait=img_bin)
             test_cleaner_account.save()
-            print('Test cleaner account created.')
+            print('Test cleaning cleaner account created.')
 
         if not test_manager_account:
             test_manager_account = CleaningAccount(user_id=233333,
@@ -31,7 +34,12 @@ def register_test_account(sender, **kwargs):
                                                    name='Test Manager 1',
                                                    portrait=img_bin)
             test_manager_account.save()
-            print('Test manager account created.')
+            print('Test cleaning manager account created.')
+    if not test_recycle_account:
+        test_recycle_account = RecycleAccount(user_id=100, user_name='RecycleTest',
+                                              email='foo@example.com')
+        test_recycle_account.save()
+        print('Test recycle account created.')
 
 
 if sys.argv[1] == 'migrate':

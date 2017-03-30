@@ -38,11 +38,27 @@ class CleaningGroupMembership(models.Model):
     group = models.ForeignKey(CleaningGroup, on_delete=models.CASCADE)
     user = models.ForeignKey(CleaningAccount, on_delete=models.CASCADE)
 
+    class Meta:
+        unique_together = ('group', 'user')
+
 
 # NOTE: All timestamp property must be named timestamp
 class CleaningBulletin(models.Model):
-    poster = models.ForeignKey(CleaningAccount, on_delete=models.SET_NULL)
+    poster = models.ForeignKey(CleaningAccount, on_delete=models.CASCADE)
     group = models.ForeignKey(CleaningGroup, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=60, null=False)
     text = models.TextField(null=False)
+
+    class Meta:
+        unique_together = ('group', 'poster', 'timestamp')
+        ordering = ['-timestamp']
+
+
+class RecycleAccount(models.Model):
+    user_id = models.BigAutoField(primary_key=True)
+    user_name = models.CharField(max_length=20, null=False, unique=True)
+    password = models.CharField(max_length=20, null=False)
+    email = models.EmailField(null=False)
+    credit = models.IntegerField(null=False, default=0)
+    register_date = models.DateField(auto_now_add=True, null=False)

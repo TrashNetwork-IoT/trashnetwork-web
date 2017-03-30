@@ -25,6 +25,11 @@ def get_cleaning_user_info_dict(user: models.CleaningAccount):
     return result
 
 
+def get_recycle_user_basic_info_dict(user: models.RecycleAccount):
+    result = dict(user_id=user.user_id, credit=user.credit)
+    return result
+
+
 def general_time_limit(end_time: int =None, start_time: int =None, **kwargs):
     if not end_time:
         return Q(timestamp__lte=get_datetime())
