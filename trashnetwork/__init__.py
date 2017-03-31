@@ -7,6 +7,7 @@ from trashnetwork.settings import BASE_DIR
 def register_test_account(sender, **kwargs):
     from trashnetwork.models import CleaningAccount
     from trashnetwork.models import RecycleAccount
+    from trashnetwork.models import Trash
 
     test_cleaner_account = CleaningAccount.objects.filter(user_id=123456)
     test_manager_account = CleaningAccount.objects.filter(user_id=233333)
@@ -40,7 +41,14 @@ def register_test_account(sender, **kwargs):
                                               email='foo@example.com')
         test_recycle_account.save()
         print('Test recycle account created.')
-
+    if not Trash.objects.all():
+        test_trash = Trash(trash_id=1,
+                           description='Trash on layer 2, No.9 student apartment',
+                           longitude=116.355769,
+                           latitude=39.96431,
+                           bottle_recycle=True)
+        test_trash.save()
+        print('Test trash created.')
 
 if sys.argv[1] == 'migrate':
     from django.db.models.signals import post_migrate

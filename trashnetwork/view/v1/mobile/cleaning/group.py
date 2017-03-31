@@ -5,7 +5,7 @@ from rest_framework.request import Request
 from base64 import b64encode
 
 from trashnetwork.models import *
-from trashnetwork.util.view_utils import general_time_limit
+from trashnetwork.util.view_utils import general_query_time_limit
 from trashnetwork.view.check_exception import CheckException
 from trashnetwork.view import result_code
 from trashnetwork.util import view_utils
@@ -30,7 +30,7 @@ def all_groups(req: Request):
 @api_view(['GET'])
 def bulletin(req: Request, limit_num, **kwargs):
     bulletins = []
-    for bulletin in CleaningBulletin.objects.filter(general_time_limit(**kwargs)).order_by('-timestamp')[:limit_num]:
+    for bulletin in CleaningBulletin.objects.filter(general_query_time_limit(**kwargs)).order_by('-timestamp')[:limit_num]:
         bulletin_object = dict(poster_id=bulletin.poster_id,
                                post_time=bulletin.timestamp.timestamp(),
                                title=bulletin.title,

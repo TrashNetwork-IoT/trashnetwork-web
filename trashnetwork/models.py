@@ -62,3 +62,21 @@ class RecycleAccount(models.Model):
     email = models.EmailField(null=False)
     credit = models.IntegerField(null=False, default=0)
     register_date = models.DateField(auto_now_add=True, null=False)
+
+
+class Trash(models.Model):
+    trash_id = models.BigAutoField(primary_key=True)
+    description = models.CharField(null=True, max_length=60)
+    longitude = models.FloatField(null=False)
+    latitude = models.FloatField(null=False)
+    bottle_recycle = models.BooleanField(null=False, default=False)
+
+
+class Feedback(models.Model):
+    poster = models.ForeignKey(RecycleAccount, on_delete=models.CASCADE, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    title = models.CharField(max_length=60, null=False)
+    text = models.TextField(null=False)
+
+    class Meta:
+        ordering = ['-timestamp']
