@@ -29,7 +29,7 @@ def recycle_bottle(req: Request):
     try:
         trash = models.Trash.objects.filter(trash_id=int(req.data['trash_id'])).get()
     except models.Trash.DoesNotExist:
-        raise CheckException(result_code=result_code.MR_TRASH_NOT_FOUND,
+        raise CheckException(status=status.HTTP_404_NOT_FOUND, result_code=result_code.MR_TRASH_NOT_FOUND,
                              message=_('Trash not found'))
     user_longitude = float(req.data['longitude'])
     user_latitude = float(req.data['latitude'])

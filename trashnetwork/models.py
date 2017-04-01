@@ -6,6 +6,7 @@ CLEANING_ACCOUNT_GENDER_MALE = 'M'
 CLEANING_ACCOUNT_GENDER_FEMALE = 'F'
 CLEANING_ACCOUNT_TYPE_CLEANER = 'C'
 CLEANING_ACCOUNT_TYPE_MANAGER = 'M'
+SPECIAL_WORK_GROUP_ID = 1
 
 
 class CleaningAccount(models.Model):
@@ -28,7 +29,12 @@ class CleaningAccount(models.Model):
         db_table = 'cleaning_account'
 
 
-SPECIAL_WORK_GROUP_ID = 1
+class Trash(models.Model):
+    trash_id = models.BigAutoField(primary_key=True)
+    description = models.CharField(null=True, max_length=60)
+    longitude = models.FloatField(null=False)
+    latitude = models.FloatField(null=False)
+    bottle_recycle = models.BooleanField(null=False, default=False)
 
 
 class CleaningGroup(models.Model):
@@ -58,6 +64,16 @@ class CleaningGroupBulletin(models.Model):
         ordering = ['-timestamp']
 
 
+class CleaningWorkRecord(models.Model):
+    user = models.ForeignKey(CleaningAccount, on_delete=models.CASCADE)
+    trash = models.ForeignKey(Trash, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'timestamp')
+        ordering = ['-timestamp']
+
+
 class RecycleAccount(models.Model):
     user_id = models.BigAutoField(primary_key=True)
     user_name = models.CharField(max_length=20, null=False, unique=True)
@@ -77,14 +93,6 @@ class RecycleCreditRecord(models.Model):
     class Meta:
         unique_together = ('user', 'timestamp')
         ordering = ['-timestamp']
-
-
-class Trash(models.Model):
-    trash_id = models.BigAutoField(primary_key=True)
-    description = models.CharField(null=True, max_length=60)
-    longitude = models.FloatField(null=False)
-    latitude = models.FloatField(null=False)
-    bottle_recycle = models.BooleanField(null=False, default=False)
 
 
 class Feedback(models.Model):

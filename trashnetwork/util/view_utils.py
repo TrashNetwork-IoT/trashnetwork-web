@@ -49,6 +49,12 @@ def get_bulletin_dict(bulletin: models.CleaningGroupBulletin):
                 text_content=bulletin.text)
 
 
+def get_work_record(record: models.CleaningWorkRecord):
+    return dict(user_id=record.user_id,
+                trash_id=record.trash_id,
+                record_time=int(record.timestamp.timestamp()))
+
+
 def get_feedback_dict(feedback: models.Feedback):
     result = dict(title=feedback.title, text_content=feedback.text,
                   feedback_time=int(feedback.timestamp.timestamp()))

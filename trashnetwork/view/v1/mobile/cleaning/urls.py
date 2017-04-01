@@ -1,6 +1,7 @@
 from django.conf.urls import url
 from trashnetwork.view.v1.mobile.cleaning import account as mobile_account
 from trashnetwork.view.v1.mobile.cleaning import group as mobile_group
+from trashnetwork.view.v1.mobile.cleaning import work_record
 
 urlpatterns = [
     # Mobile - Cleaning - Account
@@ -15,5 +16,20 @@ urlpatterns = [
     url(r'^group/bulletin/(?P<group_id>\d+)/(?P<start_time>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$', mobile_group.bulletin),
     url(r'^group/bulletin/(?P<group_id>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$', mobile_group.bulletin),
     url(r'^group/bulletin/(?P<group_id>\d+)/(?P<limit_num>\d+)$', mobile_group.bulletin),
-    url(r'^group/new_bulletin', mobile_group.post_bulletin)
+    url(r'^group/new_bulletin$', mobile_group.post_bulletin),
+
+    # Mobile - Cleaning - Work Record
+    url(r'^work/record/by_trash/(?P<trash_id>\d+)/(?P<start_time>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$', work_record.get_work_record),
+    url(r'^work/record/by_trash/(?P<trash_id>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$', work_record.get_work_record),
+    url(r'^work/record/by_trash/(?P<trash_id>\d+)/(?P<limit_num>\d+)$', work_record.get_work_record),
+
+    url(r'^work/record/by_user/(?P<user_id>\d+)/(?P<start_time>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$', work_record.get_work_record),
+    url(r'^work/record/by_user/(?P<user_id>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$', work_record.get_work_record),
+    url(r'^work/record/by_user/(?P<user_id>\d+)/(?P<limit_num>\d+)$', work_record.get_work_record),
+
+    url(r'^work/record/(?P<start_time>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$', work_record.get_work_record),
+    url(r'^work/record/(?P<end_time>\d+)/(?P<limit_num>\d+)$', work_record.get_work_record),
+    url(r'^work/record/(?P<limit_num>\d+)$', work_record.get_work_record),
+
+    url(r'^work/new_record$', work_record.post_work_record)
 ]
