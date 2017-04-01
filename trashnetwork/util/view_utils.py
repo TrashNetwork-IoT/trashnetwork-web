@@ -30,6 +30,25 @@ def get_trash_info_dict(trash: models.Trash):
                 longitude=trash.longitude, latitude=trash.latitude, bottle_recycle=trash.bottle_recycle)
 
 
+def get_group_dict(group: models.CleaningGroup):
+    member_list = []
+    if group.group_id == models.SPECIAL_WORK_GROUP_ID:  # Special work group
+        for u in models.CleaningAccount.objects.all():
+            member_list.append(u.user_id)
+    else:
+        for gm in models.CleaningGroupMembership.objects.filter(group=group):
+            member_list.append(gm.user.user_id)
+    return dict(group_id=group.group_id, name=group.name, portrait=base64.b64encode(group.portrait).decode(),
+                member_list=member_list)
+
+
+def get_bulletin_dict(bulletin: models.CleaningGroupBulletin):
+    return dict(poster_id=bulletin.poster_id,
+                post_time=int(bulletin.timestamp.timestamp()),
+                title=bulletin.title,
+                text_content=bulletin.text)
+
+
 def get_feedback_dict(feedback: models.Feedback):
     result = dict(title=feedback.title, text_content=feedback.text,
                   feedback_time=int(feedback.timestamp.timestamp()))
@@ -51,6 +70,7 @@ def general_query_time_limit(end_time=None, start_time=None, **kwargs):
     if start_time is not None:
         q &= Q(timestamp__gte=datetime.datetime.fromtimestamp(int(start_time)))
     for k, v in kwargs.items():
-        d = {k: v}
-        q &= Q(**d)
+        if v is not None:
+            d = {k: v}
+            q &= Q(**d)
     return q

@@ -28,8 +28,11 @@ class CleaningAccount(models.Model):
         db_table = 'cleaning_account'
 
 
+SPECIAL_WORK_GROUP_ID = 1
+
+
 class CleaningGroup(models.Model):
-    group_id = models.BigIntegerField(primary_key=True)
+    group_id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=50, null=False)
     portrait = models.BinaryField(null=False)
 
@@ -43,7 +46,7 @@ class CleaningGroupMembership(models.Model):
 
 
 # NOTE: All timestamp property must be named timestamp
-class CleaningBulletin(models.Model):
+class CleaningGroupBulletin(models.Model):
     poster = models.ForeignKey(CleaningAccount, on_delete=models.CASCADE)
     group = models.ForeignKey(CleaningGroup, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)

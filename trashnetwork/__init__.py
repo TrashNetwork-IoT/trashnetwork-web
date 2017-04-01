@@ -4,43 +4,53 @@ import sys
 from trashnetwork.settings import BASE_DIR
 
 
-def register_test_account(sender, **kwargs):
+def create_test_data(sender, **kwargs):
     from trashnetwork.models import CleaningAccount
     from trashnetwork.models import RecycleAccount
     from trashnetwork.models import Trash
+    from trashnetwork.models import CleaningGroup
+    from trashnetwork.models import CleaningGroupMembership
+    from trashnetwork import models
 
     test_cleaner_account = CleaningAccount.objects.filter(user_id=123456)
     test_manager_account = CleaningAccount.objects.filter(user_id=233333)
     test_recycle_account = RecycleAccount.objects.filter(user_name='RecycleTest')
-    if not test_cleaner_account or not test_manager_account:
-        img_file = open(os.path.join(BASE_DIR, 'trashnetwork/default_portrait.png'), 'rb')
-        img_bin = bytes(img_file.read())
-        if not test_cleaner_account:
-            test_cleaner_account = CleaningAccount(user_id=123456,
-                                                   phone_number='123456',
-                                                   password='123456',
-                                                   gender='M',
-                                                   account_type='C',
-                                                   name='Test Cleaner 1',
-                                                   portrait=img_bin)
-            test_cleaner_account.save()
-            print('Test cleaning cleaner account created.')
+    img_file = open(os.path.join(BASE_DIR, 'trashnetwork/default_portrait.png'), 'rb')
+    img_bin = bytes(img_file.read())
+    if not test_cleaner_account:
+        test_cleaner_account = CleaningAccount(user_id=123456,
+                                               phone_number='123456',
+                                               password='123456',
+                                               gender='M',
+                                               account_type='C',
+                                               name='Test Cleaner 1',
+                                               portrait=img_bin)
+        test_cleaner_account.save()
+        print('Test cleaning cleaner account created.')
+    else:
+        test_cleaner_account = test_cleaner_account.get()
 
-        if not test_manager_account:
-            test_manager_account = CleaningAccount(user_id=233333,
-                                                   phone_number='233333',
-                                                   password='123456',
-                                                   gender='F',
-                                                   account_type='M',
-                                                   name='Test Manager 1',
-                                                   portrait=img_bin)
-            test_manager_account.save()
-            print('Test cleaning manager account created.')
+    if not test_manager_account:
+        test_manager_account = CleaningAccount(user_id=233333,
+                                               phone_number='233333',
+                                               password='123456',
+                                               gender='F',
+                                               account_type='M',
+                                               name='Test Manager 1',
+                                               portrait=img_bin)
+        test_manager_account.save()
+        print('Test cleaning manager account created.')
+    else:
+        test_manager_account = test_manager_account.get()
+
     if not test_recycle_account:
         test_recycle_account = RecycleAccount(user_id=100, user_name='RecycleTest',
                                               email='foo@example.com')
         test_recycle_account.save()
         print('Test recycle account created.')
+    else:
+        test_recycle_account = test_recycle_account.get()
+
     if not Trash.objects.all():
         test_trash = Trash(trash_id=1,
                            description='Trash on layer 2, No.9 student apartment',
@@ -49,9 +59,20 @@ def register_test_account(sender, **kwargs):
                            bottle_recycle=True)
         test_trash.save()
         print('Test trash created.')
+    if not CleaningGroup.objects.all():
+        work_group = CleaningGroup(group_id=models.SPECIAL_WORK_GROUP_ID, name='Work Group', portrait=img_bin)
+        work_group.save()
+        print('Work group created.')
+        test_group = CleaningGroup(name='Test Group', portrait=img_bin)
+        test_group.save()
+        member = CleaningGroupMembership(group=test_group, user=test_cleaner_account)
+        member.save()
+        member = CleaningGroupMembership(group=test_group, user=test_manager_account)
+        member.save()
+        print('Test group created.')
 
 if sys.argv[1] == 'migrate':
     from django.db.models.signals import post_migrate
-    post_migrate.connect(register_test_account)
+    post_migrate.connect(create_test_data)
 elif sys.argv[1] == 'runserver':
     default_app_config = 'trashnetwork.apps.TrashNetworkConfig'
