@@ -3,6 +3,7 @@ import datetime
 
 from django.db.models import Q
 from django.http import JsonResponse
+from django.utils.translation import ugettext as _
 from trashnetwork import models
 
 
@@ -35,6 +36,11 @@ def get_feedback_dict(feedback: models.Feedback):
     if feedback.poster:
         result.update({'user_name': feedback.poster.user_name})
     return result
+
+
+def get_credit_record_dict(record: models.RecycleCreditRecord):
+    return dict(good_description=_(record.good_description), quantity=record.quantity,
+                credit=record.credit, record_time=int(record.timestamp.timestamp()))
 
 
 def general_query_time_limit(end_time=None, start_time=None, **kwargs):

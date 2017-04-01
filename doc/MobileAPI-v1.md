@@ -720,8 +720,8 @@ Every trash should contain following fields:
     {
       "trash_id": 1,
       "description": "Trash on layer 2, No.9 student apartment",
-      "longitude": 116.362249,
-      "latitude": 39.970163,
+      "longitude": 116.355769,
+      "latitude": 39.96431,
       "bottle_recycle": true
     }
   ]
@@ -779,7 +779,7 @@ Successful response example:
     {
       "user_name": "Test user",
       "title": "Feedback Title",
-      "content": "Feedback content...",
+      "text_content": "Feedback content...",
       "feedback_time": 1489827858
     }
   ]

@@ -64,6 +64,18 @@ class RecycleAccount(models.Model):
     register_date = models.DateField(auto_now_add=True, null=False)
 
 
+class RecycleCreditRecord(models.Model):
+    user = models.ForeignKey(RecycleAccount, on_delete=models.CASCADE, null=False)
+    good_description = models.CharField(null=False, max_length=100)
+    quantity = models.IntegerField(null=False, default=1)
+    credit = models.IntegerField(null=False, default=0)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'timestamp')
+        ordering = ['-timestamp']
+
+
 class Trash(models.Model):
     trash_id = models.BigAutoField(primary_key=True)
     description = models.CharField(null=True, max_length=60)
