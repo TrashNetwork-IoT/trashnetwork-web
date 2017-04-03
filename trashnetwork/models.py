@@ -48,6 +48,7 @@ class CleaningGroupMembership(models.Model):
     user = models.ForeignKey(CleaningAccount, on_delete=models.CASCADE)
 
     class Meta:
+        db_table = 'cleaning_group_member'
         unique_together = ('group', 'user')
 
 

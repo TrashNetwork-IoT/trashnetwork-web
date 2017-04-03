@@ -53,7 +53,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.cache.FetchFromCacheMiddleware'
+    'django.middleware.cache.FetchFromCacheMiddleware',
 ]
 
 ROOT_URLCONF = 'trashnetwork.urls'
@@ -99,13 +99,15 @@ CACHES = {
     'default': {
         'BACKEND': 'redis_cache.RedisCache',
         'LOCATION': 'localhost:6379',
+        'TIMEOUT': None,
         'OPTIONS': {
             'PARSER_CLASS': 'redis.connection.HiredisParser',
             'CONNECTION_POOL_CLASS': 'redis.BlockingConnectionPool',
             'CONNECTION_POOL_CLASS_KWARGS': {
                 'max_connections': 50,
                 'timeout': 15,
-            }
+            },
+            'MAX_ENTRIES': 1000
         },
     },
 }
@@ -135,6 +137,22 @@ TN_MQTT_BROKER = {
     'CLIENT_ID': 'trashnetwork_webserver_user:admin',
     'USERNAME': 'trashnetwork_webserver_user:admin',
     'PASSWORD': '123456'
+}
+
+# MQTT Topic
+MQTT_TOPIC_CLEANING_REMINDER = 'cleaning_reminder'
+MQTT_TOPIC_LATEST_WORK_RECORD = 'latest_work_record'
+
+
+# Scheduler
+TN_SCHEDULER = {
+    'REDIS_DB': 4,
+    'THREAD_POOL_SIZE': 20,
+    'MAX_JOB_INSTANCE': 5
+}
+
+TN_CLEANING_REMINDER = {
+    'INTERVAL_MINUTES': 120
 }
 
 # Internationalization

@@ -49,7 +49,7 @@ def get_bulletin_dict(bulletin: models.CleaningGroupBulletin):
                 text_content=bulletin.text)
 
 
-def get_work_record(record: models.CleaningWorkRecord):
+def get_work_record_dict(record: models.CleaningWorkRecord):
     return dict(user_id=record.user_id,
                 trash_id=record.trash_id,
                 record_time=int(record.timestamp.timestamp()))

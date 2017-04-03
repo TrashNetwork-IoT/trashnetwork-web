@@ -1,3 +1,5 @@
+import json
+
 from django.utils.translation import ugettext as _
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -6,8 +8,9 @@ from rest_framework.request import Request
 from trashnetwork.models import *
 from trashnetwork.view.check_exception import CheckException
 from trashnetwork.view import result_code
-from trashnetwork.util import view_utils, check_utils
+from trashnetwork.util import view_utils, check_utils, mqtt_broker_utils, scheduler_utils
 from trashnetwork.view.v1.mobile.cleaning import account
+from trashnetwork import settings
 
 
 @api_view(['GET'])
@@ -22,7 +25,7 @@ def get_work_record(req: Request, limit_num: str, user_id: str = None, trash_id:
     if trash_id is not None:
         q.filter(trash_id=int(trash_id))
     for wr in q[:int(limit_num)]:
-        work_record_list.append(view_utils.get_work_record(wr))
+        work_record_list.append(view_utils.get_work_record_dict(wr))
     if len(work_record_list) == 0:
         raise CheckException(status=status.HTTP_404_NOT_FOUND, result_code=result_code.MC_WORK_RECORD_NOT_FOUND,
                              message=_('Work record not found'))
@@ -49,5 +52,8 @@ def post_work_record(req: Request):
                              message=_('Too far away from specific trash'))
     new_record = CleaningWorkRecord(user=user, trash=trash)
     new_record.save()
+    mqtt_broker_utils.publish_message(full_topic=settings.MQTT_TOPIC_LATEST_WORK_RECORD,
+                                      message=json.dumps(view_utils.get_work_record_dict(new_record)))
+    scheduler_utils.add_cleaning_reminder(trash_id=trash.trash_id)
     return view_utils.get_json_response(status=status.HTTP_201_CREATED,
                                         message=_('Post new work record successfully'))

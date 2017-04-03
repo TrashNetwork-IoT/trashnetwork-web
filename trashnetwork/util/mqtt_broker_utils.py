@@ -52,7 +52,7 @@ def broker_loop():
                     if mqtt_subscribe(topic=mqtt_action[KEY_MQTT_TOPIC], qos=mqtt_action[KEY_MQTT_QOS]):
                         break
                     time.sleep(1)
-                if mqtt_action[KEY_MQTT_ACTION] == MQTT_ACTION_PUBLISH:
+                elif mqtt_action[KEY_MQTT_ACTION] == MQTT_ACTION_PUBLISH:
                     if mqtt_publish(topic=mqtt_action[KEY_MQTT_TOPIC], qos=mqtt_action[KEY_MQTT_QOS],
                                     payload=mqtt_action[KEY_MQTT_PAYLOAD], retain=mqtt_action[KEY_MQTT_RETAIN]):
                         break
@@ -100,7 +100,7 @@ def disconnect_from_broker():
     broker_client = None
 
 
-def subscribe_topic(full_topic: str, qos: int = 1, max_retry: int = 5):
+def subscribe_topic(full_topic: str, qos: int = 1):
     """
     :type topic_user: micronurse_webserver.models.Account
     """
@@ -138,8 +138,8 @@ def publish_message(full_topic: str, message: str, topic_user = None, qos: int =
     )
 
 
-def get_full_topic(topic: str, topic_type: int, owner_id: int = None):
-    full_topic = topic + '/' + str(topic_type)
+def get_full_topic(topic: str, owner_id: int = None):
+    full_topic = topic
     if owner_id is not None:
         full_topic += '/' + str(owner_id)
     return full_topic
