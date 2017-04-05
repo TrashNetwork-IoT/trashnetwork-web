@@ -53,7 +53,7 @@ def create_test_data(sender, **kwargs):
 
     if not Trash.objects.all():
         test_trash = Trash(trash_id=1,
-                           description='Trash on layer 2, No.9 student apartment',
+                           description='Trash can on layer 2, No.9 student apartment',
                            longitude=116.355769,
                            latitude=39.96431,
                            bottle_recycle=True)

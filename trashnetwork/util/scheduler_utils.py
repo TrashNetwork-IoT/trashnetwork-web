@@ -1,3 +1,4 @@
+import datetime
 import json
 
 import pytz
@@ -52,7 +53,17 @@ def add_cleaning_reminder(trash_id: int):
 
 
 def job_cleaning_reminder(trash_id: int):
+    now = datetime.datetime.now()
+    if now.isoweekday() < settings.TN_CLEANING_REMINDER['TIME_RANGE_START_WEEKDAY'] or \
+       now.isoweekday() > settings.TN_CLEANING_REMINDER['TIME_RANGE_END_WEEKDAY']:
+        return
+    if now.hour < settings.TN_CLEANING_REMINDER['TIME_RANGE_START_HOUR'] or \
+       now.hour > settings.TN_CLEANING_REMINDER['TIME_RANGE_END_HOUR']:
+        return
     mqtt_broker_utils.publish_message(full_topic=settings.MQTT_TOPIC_CLEANING_REMINDER,
-                                      message=json.dumps({'trash_id': int(trash_id)}),
-                                      qos=0)
+                                      message=json.dumps(
+                                          {'trash_id': int(trash_id),
+                                           'remind_time': int(now.timestamp())}
+                                      ),
+                                      qos=1)
 

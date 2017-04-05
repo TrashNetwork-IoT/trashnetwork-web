@@ -364,7 +364,7 @@ GET cleaning/work/record/by_user/{user_id}/{end_time}/{limit_num}
 GET cleaning/work/record/by_user/{user_id}/{start_time}/{end_time}/{limit_num}
 ```
 
-3. Query latest records by specific trash.
+3. Query latest records by specific trash can.
 
 ```
 GET cleaning/work/record/by_trash/{trash_id}/{limit_num}
@@ -374,7 +374,7 @@ GET cleaning/work/record/by_trash/{trash_id}/{start_time}/{end_time}/{limit_num}
 
 + `{user_id}`: ID of the user to query, long integer.
 
-+ `{trash_id}`: ID of the trash to query, long integer.
++ `{trash_id}`: ID of the trash can to query, long integer.
 
 + `{start_time}`: start time point, UNIX timestamp format(second unit).
 
@@ -395,7 +395,7 @@ Successful response should contain a list consisting of info of work records, an
 Every work record should contain following fields:
 
 + `user_id`: ID of the worker, long integer.
-+ `trash_id`: ID of the corresponding trash, long integer.
++ `trash_id`: ID of the corresponding trash can, long integer.
 + `record_time`: record time, UNIX timestamp format(second unit).
 
 Successful response example:
@@ -416,7 +416,7 @@ Successful response example:
 
 #### 1.3.2 * Post new work record
 
-When posting new work record, the worker should not exceed **50 meters** distant from the given trash.
+When posting new work record, the worker should not exceed **50 meters** distant from the given trash can.
 
 ```
 POST cleaning/work/new_record
@@ -424,7 +424,7 @@ POST cleaning/work/new_record
 
 ##### Request field
 
-+ `trash_id`: ID of the specific trash, long integer.
++ `trash_id`: ID of the specific trash can, long integer.
 
 + `longitude`: longitude of worker's current location, double.
 
@@ -433,12 +433,12 @@ POST cleaning/work/new_record
 
 ##### Response
 
-| HTTP Status Code | result_code | message                           |
-| ---------------- | ----------- | --------------------------------- |
-| 404              | 100202      | Trash not found                   |
-| 422              | 100203      | Illegal location                  |
-| 422              | 100204      | Too far away from specific trash  |
-| 201              | 0           | Post new work record successfully |
+| HTTP Status Code | result_code | message                              |
+| ---------------- | ----------- | ------------------------------------ |
+| 404              | 100202      | Trash can not found                  |
+| 422              | 100203      | Illegal location                     |
+| 422              | 100204      | Too far away from specific trash can |
+| 201              | 0           | Post new work record successfully    |
 
 ## 2. API for recycle client
 
@@ -632,7 +632,7 @@ Successful response example:
 
 #### 2.2.2 * Post new credit record(bottle recycle)
 
-When recycling bottles, the user should not exceed **50 meters** distant from the given trash.
+When recycling bottles, the user should not exceed **50 meters** distant from the given trash can.
 
 ```
 POST recycle/credit/record/new/bottle_recycle
@@ -640,7 +640,7 @@ POST recycle/credit/record/new/bottle_recycle
 
 ##### Request field
 
-+ `trash_id`: trash ID, long integer.
++ `trash_id`: trash can ID, long integer.
 + `quantity`: quantity of bottles, integer.
 + `longitude`: longitude of user's current location, double.
 + `latitude`: latitude of user's current location, double.
@@ -649,10 +649,10 @@ POST recycle/credit/record/new/bottle_recycle
 
 | HTTP Status Code | result_code | message                                  |
 | ---------------- | ----------- | ---------------------------------------- |
-| 404              | 200111      | Trash not found                          |
-| 422              | 200112      | This trash is not a bottle recycle point |
+| 404              | 200111      | Trash can not found                      |
+| 422              | 200112      | This trash can is not a bottle recycle point |
 | 422              | 200113      | Illegal location                         |
-| 422              | 200114      | Too far away from specific trash         |
+| 422              | 200114      | Too far away from specific trash can     |
 | 201              | 0           | Recycle bottle successfully              |
 
 Response should contain credits that the user gain by recycling bottles this time.
@@ -690,7 +690,7 @@ POST recycle/feedback/new_feekback
 
 ## 3. Public API
 
-### 3.1 Query trashes
+### 3.1 Query trash cans
 
 ```
 GET public/trash/all_trashes
@@ -704,13 +704,13 @@ GET public/trash/all_trashes
 
 Successful response should contain a list consisting of info of all trashes.
 
-Every trash should contain following fields:
+Every trash can should contain following fields:
 
-+ `trash_id`: trash ID, long integer.
-+ `description`: literal description of the trash, string.
-+ `longitude`: longitude of the trash's location, double.
-+ `latitude`: latitude of the trash's location, double.
-+ `bottle_recycle`: Whether this trash is a bottle recycle point, boolean.
++ `trash_id`: trash can ID, long integer.
++ `description`: literal description of the trash can, string.
++ `longitude`: longitude of the trash can's location, double.
++ `latitude`: latitude of the trash can's location, double.
++ `bottle_recycle`: Whether this trash can is a bottle recycle point, boolean.
 
 ```json
 {
