@@ -28,6 +28,9 @@ class CleaningAccount(models.Model):
     class Meta:
         db_table = 'cleaning_account'
 
+    def __str__(self):
+        return 'Cleaning user ' + self.name
+
 
 class Trash(models.Model):
     trash_id = models.BigAutoField(primary_key=True)
@@ -36,11 +39,17 @@ class Trash(models.Model):
     latitude = models.FloatField(null=False)
     bottle_recycle = models.BooleanField(null=False, default=False)
 
+    def __str__(self):
+        return 'Trash %s' % (self.description)
+
 
 class CleaningGroup(models.Model):
     group_id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=50, null=False)
     portrait = models.BinaryField(null=False)
+
+    def __str__(self):
+        return 'Cleaning group %s' % (self.name)
 
 
 class CleaningGroupMembership(models.Model):
@@ -50,6 +59,9 @@ class CleaningGroupMembership(models.Model):
     class Meta:
         db_table = 'cleaning_group_member'
         unique_together = ('group', 'user')
+
+    def __str__(self):
+        return 'Cleaning user %s in %s' % (self.user.name, self.group.name)
 
 
 # NOTE: All timestamp property must be named timestamp
@@ -64,6 +76,9 @@ class CleaningGroupBulletin(models.Model):
         unique_together = ('group', 'poster', 'timestamp')
         ordering = ['-timestamp']
 
+    def __str__(self):
+        return 'Cleaning bulletin %s in group %s' % (self.title, self.group.name)
+
 
 class CleaningWorkRecord(models.Model):
     user = models.ForeignKey(CleaningAccount, on_delete=models.CASCADE)
@@ -74,6 +89,9 @@ class CleaningWorkRecord(models.Model):
         unique_together = ('user', 'timestamp')
         ordering = ['-timestamp']
 
+    def __str__(self):
+        return 'Cleaning user %s at trash %s' % (self.user.name, self.trash.description)
+
 
 class RecycleAccount(models.Model):
     user_id = models.BigAutoField(primary_key=True)
@@ -82,6 +100,9 @@ class RecycleAccount(models.Model):
     email = models.EmailField(null=False)
     credit = models.IntegerField(null=False, default=0)
     register_date = models.DateField(auto_now_add=True, null=False)
+
+    def __str__(self):
+        return 'Recycle user %s' % (self.user_name)
 
 
 class RecycleCreditRecord(models.Model):
@@ -95,6 +116,9 @@ class RecycleCreditRecord(models.Model):
         unique_together = ('user', 'timestamp')
         ordering = ['-timestamp']
 
+    def __str__(self):
+        return 'Recycle credit %s' % (self.good_description)
+
 
 class Feedback(models.Model):
     poster = models.ForeignKey(RecycleAccount, on_delete=models.CASCADE, null=True)
@@ -104,3 +128,6 @@ class Feedback(models.Model):
 
     class Meta:
         ordering = ['-timestamp']
+
+    def __str__(self):
+        return 'Feedback %s' % (self.title)
