@@ -21,13 +21,13 @@ def get_cleaning_user_info_dict(user: models.CleaningAccount):
 
 
 def get_recycle_user_basic_info_dict(user: models.RecycleAccount):
-    result = dict(user_id=user.user_id, credit=user.credit)
+    result = dict(user_id=user.user_id, account_type=user.account_type, credit=user.credit)
     return result
 
 
 def get_trash_info_dict(trash: models.Trash):
     return dict(trash_id=trash.trash_id, description=trash.description,
-                longitude=trash.longitude, latitude=trash.latitude, bottle_recycle=trash.bottle_recycle)
+                longitude=trash.longitude, latitude=trash.latitude)
 
 
 def get_group_dict(group: models.CleaningGroup):
@@ -66,6 +66,23 @@ def get_feedback_dict(feedback: models.Feedback):
 def get_credit_record_dict(record: models.RecycleCreditRecord):
     return dict(good_description=_(record.good_description), quantity=record.quantity,
                 credit=record.credit, record_time=int(record.timestamp.timestamp()))
+
+
+def get_recycle_point_dict(point: models.RecyclePoint, is_owner: bool = False):
+    bottle_recycle = point.bottle_num is not None
+    result = {'recycle_point_id': point.point_id, 'description': point.description,
+              'latitude': point.latitude, 'longitude': point.longitude,
+              'bottle_recycle': bottle_recycle}
+    if is_owner:
+        if bottle_recycle:
+            result.update(bottle_num=point.bottle_num)
+        result.update(owner_id=point.owner_id)
+    return result
+
+
+def get_recycle_record_dict(record: models.RecycleCleaningRecord):
+    return dict(recycle_point_id=record.recycle_point_id, bottle_num=record.bottle_num,
+                recycle_time=int(record.timestamp.timestamp()))
 
 
 def general_query_time_limit(end_time=None, start_time=None, **kwargs):

@@ -27,20 +27,23 @@ def get_credit_records(req: Request, start_time: str = None, end_time: str = Non
 def recycle_bottle(req: Request):
     user = account.token_check(req)
     try:
-        trash = models.Trash.objects.filter(trash_id=int(req.data['trash_id'])).get()
+        recycle_point = models.RecyclePoint.objects.filter(point_id=int(req.data['recycle_point_id'])).get()
     except models.Trash.DoesNotExist:
-        raise CheckException(status=status.HTTP_404_NOT_FOUND, result_code=result_code.MR_TRASH_NOT_FOUND,
-                             message=_('Trash not found'))
+        raise CheckException(status=status.HTTP_404_NOT_FOUND, result_code=result_code.MR_CREDIT_RECORD_RECYCLE_POINT_NOT_FOUND,
+                             message=_('Recycle point not found'))
+    if recycle_point.bottle_num is None:
+        raise CheckException(result_code=result_code.MR_CREDIT_RECORD_RECYCLE_POINT_NOT_FOUND,
+                             message=_('This recycle point does not accept bottles'))
     user_longitude = float(req.data['longitude'])
     user_latitude = float(req.data['latitude'])
     if not check_utils.check_location(longitude=user_longitude, latitude=user_latitude):
         raise CheckException(result_code=result_code.MR_ILLEGAL_LOCATION,
                              message=_('Illegal location'))
     if not check_utils.check_distance(p1_longitude=user_longitude, p1_latitude=user_latitude,
-                                      p2_longitude=trash.longitude, p2_latitude=trash.latitude,
+                                      p2_longitude=recycle_point.longitude, p2_latitude=recycle_point.latitude,
                                       distance_limit=50.0):
-        raise CheckException(result_code=result_code.MR_TOO_FAR_AWAY_FROM_TRASH,
-                             message=_('Too far away from specific trash'))
+        raise CheckException(result_code=result_code.MR_TOO_FAR_AWAY_FROM_RECYCLE_POINT,
+                             message=_('Too far away from specific recycle point'))
     quantity = int(req.data['quantity'])
     new_credit_record = models.RecycleCreditRecord(user=user,
                                                    good_description='Recycled bottle',
@@ -50,5 +53,7 @@ def recycle_bottle(req: Request):
     user = models.RecycleAccount.objects.filter(user_id=user.user_id).get()
     user.credit += quantity
     user.save()
+    recycle_point.bottle_num += quantity
+    recycle_point.save()
     return view_utils.get_json_response(status=status.HTTP_201_CREATED, message=_('Recycle bottle successfully'),
                                         credit=quantity)

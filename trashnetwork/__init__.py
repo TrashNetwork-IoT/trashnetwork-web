@@ -1,3 +1,4 @@
+import datetime
 import os
 import sys
 
@@ -10,6 +11,7 @@ def create_test_data(sender, **kwargs):
     from trashnetwork.models import Trash
     from trashnetwork.models import CleaningGroup
     from trashnetwork.models import CleaningGroupMembership
+    from trashnetwork.models import RecyclePoint
     from trashnetwork import models
 
     test_cleaner_account = CleaningAccount.objects.filter(user_id=123456)
@@ -44,19 +46,31 @@ def create_test_data(sender, **kwargs):
         test_manager_account = test_manager_account.get()
 
     if not test_recycle_account:
-        test_recycle_account = RecycleAccount(user_id=100, user_name='RecycleTest',
-                                              email='foo@example.com')
+        test_recycle_account = RecycleAccount(user_id=100, user_name='test',
+                                              password='123456',
+                                              account_type=models.RECYCLE_ACCOUNT_GARBAGE_COLLECTOR,
+                                              email='foo@example.com', credit=0,
+                                              register_date=datetime.date.today())
         test_recycle_account.save()
         print('Test recycle account created.')
     else:
         test_recycle_account = test_recycle_account.get()
 
+    if not RecyclePoint.objects.all():
+        test_recycle_point = RecyclePoint(point_id=1,
+                                          description='Trash can on layer 2, No.9 student apartment',
+                                          longitude=116.355769,
+                                          latitude=39.96431,
+                                          owner=test_recycle_account,
+                                          bottle_num=0)
+        test_recycle_point.save()
+        print('Test recycle point created.')
+
     if not Trash.objects.all():
         test_trash = Trash(trash_id=1,
                            description='Trash can on layer 2, No.9 student apartment',
                            longitude=116.355769,
-                           latitude=39.96431,
-                           bottle_recycle=True)
+                           latitude=39.96431)
         test_trash.save()
         print('Test trash created.')
     if not CleaningGroup.objects.all():

@@ -7,6 +7,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from trashnetwork.models import RecycleAccount
+from trashnetwork import models
 from trashnetwork.view import authentication, result_code
 from trashnetwork.view.check_exception import CheckException
 from trashnetwork.util import view_utils
@@ -17,11 +18,15 @@ MOBILE_TOKEN_VALID_HOURS = 168
 MOBILE_CLIENT_TYPE_RECYCLE = 'mobile_recycle'
 
 
-def token_check(req: Request):
+def token_check(req: Request, permission_limit: str = None, optional: bool = False):
     try:
-        token = req.META['HTTP_AUTH_TOKEN']
+        token = req.META.get('HTTP_AUTH_TOKEN')
+        if token is None:
+            if optional:
+                return None
+            raise Exception
         token_json = authentication.parse_token(token)
-        user_id = token_json['user_id']
+        user_id = int(token_json['user_id'])
     except Exception:
         raise CheckException(status=status.HTTP_401_UNAUTHORIZED, result_code=status.HTTP_401_UNAUTHORIZED,
                              message=_('Invalid token'))
@@ -30,7 +35,13 @@ def token_check(req: Request):
         raise CheckException(status=status.HTTP_401_UNAUTHORIZED, result_code=status.HTTP_401_UNAUTHORIZED,
                              message=_('Invalid token'))
     cache.set(CACHE_KEY_MOBILE_RECYCLE_TOKEN_PREFIX + str(user_id), cache_token, MOBILE_TOKEN_VALID_HOURS * 3600)
-    user = RecycleAccount(user_id=user_id)
+    if permission_limit is not None:
+        user = RecycleAccount.objects.filter(user_id=user_id).get()
+        if user.account_type != permission_limit:
+            raise CheckException(status=status.HTTP_403_FORBIDDEN, result_code=status.HTTP_403_FORBIDDEN,
+                                 message=_('Permission denied'))
+    else:
+        user = RecycleAccount(user_id=user_id)
     return user
 
 
@@ -49,15 +60,21 @@ def register(request: Request):
         raise CheckException(result_code=result_code.MR_ILLEGAL_PASSWORD_LENGTH,
                              message=_('Password is too short or too long'))
     try:
-        validate_email(request.data['email'])
+        email = request.data['email']
+        validate_email(email)
     except ValidationError:
         raise CheckException(result_code=result_code.MR_ILLEGAL_EMAIL_ADDR,
                              message=_('Illegal email address'))
+    account_type = request.data['account_type']
+    if account_type != models.RECYCLE_ACCOUNT_NORMAL_USER and \
+       account_type != models.RECYCLE_ACCOUNT_GARBAGE_COLLECTOR:
+        raise CheckException(result_code=result_code.MR_ILLEGAL_ACCOUNT_TYPE,
+                             message=_('Illegal account type'))
     if RecycleAccount.objects.filter(user_name=request.data['user_name']):
         raise CheckException(result_code=result_code.MR_USER_NAME_USED,
                              message=_('User name has been used'))
     new_user = RecycleAccount(user_name=request.data['user_name'], password=request.data['password'],
-                              email=request.data['email'], credit=0)
+                              account_type=account_type, email=email, credit=0)
     new_user.save()
     return login_response(user=new_user, message=_('Sign up successfully'))
 

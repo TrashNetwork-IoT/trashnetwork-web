@@ -33,6 +33,8 @@ If an API need authentication to access, client must put token to **`Auth-Token`
 
 If an API need authentication, it will be marked with * in this doc.
 
+If authentication of an API is optional, the API will be marked with (*) in this doc. **ATTENTION: optional authentication does NOT mean that requester can provide an invalid token.**
+
 ## Common Response
 
 Possible responses of every given API:
@@ -468,7 +470,7 @@ If login successfully, the response should contain new generated token and basic
 Basic user info should contain:
 
 + `user_id`: user ID, long integer.
-
++ `account_type`: user type, string. `N` represents normal user, `C` represents garbage collector.
 + `credit`: credit the user owns currently, integer.
 
 Successful response example:
@@ -480,6 +482,7 @@ Successful response example:
   "token": "7457052ea6f1f56eb5d830353f36bbcace59dac3",
   "user": {
     "user_id": 123456,
+    "account_type": "N",
     "credit": 0
   }
 }
@@ -494,10 +497,11 @@ POST recycle/account/register
 ##### Request field
 
 + `user_name`: user name, string.
-
 + `password`: password, the password must not be fewer than 6 characters and not be more than 20 characters in length, string.
-
 + `email`: email address, string.
++ `account_type`: string, must be one of the following values:
+  + `N`: normal user
+  + `C`: garbage collector 
 
 ##### Response
 
@@ -507,6 +511,7 @@ POST recycle/account/register
 | 422              | 200012           | Password is too short or too long |
 | 422              | 200013(Reversed) | Illegal password format           |
 | 422              | 200014           | Illegal email address             |
+| 422              | 200015           | Illegal account type              |
 | 201              | 0                | Sign up successfully              |
 
 If register successfully, the response should contain new generated token and basic user info. In other word, the response is similar with that of login.
@@ -566,6 +571,7 @@ Successful response example:
   "message": "",
   "user": {
     "user_id": 123456,
+    "account_type": "N",
     "credit": 0
   }
 }
@@ -632,7 +638,7 @@ Successful response example:
 
 #### 2.2.2 * Post new credit record(bottle recycle)
 
-When recycling bottles, the user should not exceed **50 meters** distant from the given trash can.
+When recycling bottles, the user should not exceed **50 meters** distant from the specific recycle point.
 
 ```
 POST recycle/credit/record/new/bottle_recycle
@@ -640,7 +646,7 @@ POST recycle/credit/record/new/bottle_recycle
 
 ##### Request field
 
-+ `trash_id`: trash can ID, long integer.
++ `recycle_point_id`: recycle point ID, long integer.
 + `quantity`: quantity of bottles, integer.
 + `longitude`: longitude of user's current location, double.
 + `latitude`: latitude of user's current location, double.
@@ -649,10 +655,10 @@ POST recycle/credit/record/new/bottle_recycle
 
 | HTTP Status Code | result_code | message                                  |
 | ---------------- | ----------- | ---------------------------------------- |
-| 404              | 200111      | Trash can not found                      |
-| 422              | 200112      | This trash can is not a bottle recycle point |
+| 404              | 200111      | Recycle point not found                  |
+| 422              | 200112      | This recycle point does not accept bottles |
 | 422              | 200113      | Illegal location                         |
-| 422              | 200114      | Too far away from specific trash can     |
+| 422              | 200114      | Too far away from specific recycle point |
 | 201              | 0           | Recycle bottle successfully              |
 
 Response should contain credits that the user gain by recycling bottles this time.
@@ -671,7 +677,7 @@ Successful response example:
 
 #### 2.3.1 (*) Post new feedback
 
-(Optional authentication) If requester does not provide token(**but it does not mean that requester can provide an invalid token**), the feedback will be regarded as being post by an anonymous user.
+If requester does not provide token, the feedback will be post anonymously.
 
 ```
 POST recycle/feedback/new_feekback
@@ -688,6 +694,136 @@ POST recycle/feedback/new_feekback
 | ---------------- | ----------- | -------------------------- |
 | 201              | 0           | Post feedback successfully |
 
+### 2.4 Recycle Point API
+
+#### 2.4.1 (*) Query recycle points 
+
+```
+GET recycle/recycle_point/all_points
+```
+
+##### Response
+
+| HTTP Status Code | result_code | message |
+| ---------------- | ----------- | ------- |
+| 200              | 0           | -       |
+
+Successful response should contain a list consisting of info of all recycle points.
+
+Every recycle point can should contain following fields at least:
+
+- `recycle_point_id`: recycle point ID, long integer.
+- `description`: literal description of the recycle point, string.
+- `longitude`: longitude of the recycle point's location, double.
+- `latitude`: latitude of the recycle point's location, double.
+- `bottle_recycle`: if this recycle point is able to accept bottles, boolean.
+
+If the requester is authenticated as a garbage collector and this recycle point is managed by him, it should contain following additional fields:
+
++ `bottle_num`: (if `bottle_recycle` is true)current quantity of bottles in this recycle point, integer.
+
+
++ `owner_id`: The user ID of the user who manages this recycle point.
+
+Successful response example:
+
+```json
+{
+  "result_code": 0,
+  "message": "",
+  "recycle_point_list": [
+    {
+      "point_id": 1,
+      "description": "Trash on layer 2, No.9 student apartment",
+      "longitude": 116.355769,
+      "latitude": 39.96431,
+      "bottle_num": 5,
+      "owner_id": 100
+    }
+  ]
+}
+```
+
+### 2.5 Recycle Record API
+
+#### 2.5.1 * Query recycle records
+
+Only **garbage collector** can query recycle records.
+
+1. Query at most N latest records until now.
+
+```
+GET recycle/recycle_record/{limit_num}
+```
+
+2. Query at most N latest records until a specific end time point.
+
+```
+GET recycle/recycle_record/{end_time}/{limit_num}
+```
+
+3. Query at most N latest records during a specific time period.
+
+```
+GET recycle/recycle_record/{start_time}/{end_time}/{limit_num}
+```
+
+- `{start_time}`: start time point, UNIX timestamp format(second unit).
+- `{end_time}`: end time point, UNIX timestamp format(second unit).
+- `{limit_num}`: the maximum number of records that this API can return, integer.
+
+##### Response
+
+| HTTP Status Code | result_code | message   |
+| ---------------- | ----------- | --------- |
+| 404              | 200401      | No record |
+| 200              | 0           | -         |
+
+Successful response should contain a list consisting of info of recycle records.
+
+Every record should contain following fields:
+
++ `recycle_point_id`: ID of the corresponding recycle point, long integer
++ `bottle_num`: (if the recycle point is able to accept bottles)recycled quantity of bottles in this record, integer.
++ `recycle_time`: time of this record, UNIX timestamp format(second unit).
+
+Successful response example:
+
+```json
+{
+  "result_code": 0,
+  "message": "",
+  "recycle_record_list": [
+    {
+      "recycle_point": 1,
+      "bottle_num": 5,
+      "recycle_time": 1489827858
+    }
+  ]
+}
+```
+
+#### 2.5.2 * Post new recycle record
+
+Only **garbage collector** can post recycle records.
+
+```
+POST recycle/recycle_record/new_record
+```
+
+##### Request filed
+
++ `recycle_point_id`: ID of the recycle point to recycle.
+
+##### Response
+
+| HTTP Status Code | result_code | message                                  |
+| ---------------- | ----------- | ---------------------------------------- |
+| 404              | 200402      | Recycle point not found                  |
+| 422              | 200403      | The recycle point does not be managed by you |
+| 422              | 200404      | The recycle point is empty               |
+| 201              | 0           | Post recycle record successfully         |
+
 ## 3. Public API
 
 ### 3.1 Query trash cans
@@ -702,7 +838,7 @@ GET public/trash/all_trashes
 | ---------------- | ----------- | ------- |
 | 200              | 0           | -       |
 
-Successful response should contain a list consisting of info of all trashes.
+Successful response should contain a list consisting of info of all trash cans.
 
 Every trash can should contain following fields:
 
@@ -710,7 +846,8 @@ Every trash can should contain following fields:
 + `description`: literal description of the trash can, string.
 + `longitude`: longitude of the trash can's location, double.
 + `latitude`: latitude of the trash can's location, double.
-+ `bottle_recycle`: Whether this trash can is a bottle recycle point, boolean.
+
+Successful response example:
 
 ```json
 {
@@ -721,8 +858,7 @@ Every trash can should contain following fields:
       "trash_id": 1,
       "description": "Trash on layer 2, No.9 student apartment",
       "longitude": 116.355769,
-      "latitude": 39.96431,
-      "bottle_recycle": true
+      "latitude": 39.96431
     }
   ]
 }
@@ -750,7 +886,7 @@ GET public/feedback/feedbacks/{start_time}/{end_time}/{limit_num}
 
 - `{start_time}`: start time point, UNIX timestamp format(second unit).
 - `{end_time}`: end time point, UNIX timestamp format(second unit).
-- `{limit_num}`: the maximum number of records that this API can return, integer.
+- `{limit_num}`: the maximum number of feedbacks that this API can return, integer.
 
 ##### Response
 
@@ -786,4 +922,3 @@ Successful response example:
 }
 ```
 
-#### 

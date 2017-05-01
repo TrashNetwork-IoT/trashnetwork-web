@@ -29,7 +29,12 @@ class CleaningAccount(models.Model):
         db_table = 'cleaning_account'
 
     def __str__(self):
-        return 'Cleaning user ' + self.name
+        result = 'Unknown-'
+        if self.account_type == CLEANING_ACCOUNT_TYPE_CLEANER:
+            result = 'Cleaner-'
+        else:
+            result = 'Manager-'
+        return result + self.name
 
 
 class Trash(models.Model):
@@ -37,10 +42,9 @@ class Trash(models.Model):
     description = models.CharField(null=True, max_length=60)
     longitude = models.FloatField(null=False)
     latitude = models.FloatField(null=False)
-    bottle_recycle = models.BooleanField(null=False, default=False)
 
     def __str__(self):
-        return 'Trash %s' % (self.description)
+        return '#%d %s' % (self.trash_id, self.description)
 
 
 class CleaningGroup(models.Model):
@@ -49,7 +53,7 @@ class CleaningGroup(models.Model):
     portrait = models.BinaryField(null=False)
 
     def __str__(self):
-        return 'Cleaning group %s' % (self.name)
+        return '#%d %s' % (self.group_id, self.name)
 
 
 class CleaningGroupMembership(models.Model):
@@ -77,7 +81,7 @@ class CleaningGroupBulletin(models.Model):
         ordering = ['-timestamp']
 
     def __str__(self):
-        return 'Cleaning bulletin %s in group %s' % (self.title, self.group.name)
+        return 'Bulletin %s in group %s' % (self.title, self.group.name)
 
 
 class CleaningWorkRecord(models.Model):
@@ -90,19 +94,32 @@ class CleaningWorkRecord(models.Model):
         ordering = ['-timestamp']
 
     def __str__(self):
-        return 'Cleaning user %s at trash %s' % (self.user.name, self.trash.description)
+        return '%s at %s' % (self.user.name, self.trash.description)
+
+
+RECYCLE_ACCOUNT_NORMAL_USER = 'N'
+RECYCLE_ACCOUNT_GARBAGE_COLLECTOR = 'C'
 
 
 class RecycleAccount(models.Model):
     user_id = models.BigAutoField(primary_key=True)
     user_name = models.CharField(max_length=20, null=False, unique=True)
     password = models.CharField(max_length=20, null=False)
+    account_type = models.CharField(max_length=1, choices=(
+        (RECYCLE_ACCOUNT_NORMAL_USER, 'Normal User'),
+        (RECYCLE_ACCOUNT_GARBAGE_COLLECTOR, 'Garbage Collector')
+    ), null=False, blank=False)
     email = models.EmailField(null=False)
     credit = models.IntegerField(null=False, default=0)
     register_date = models.DateField(auto_now_add=True, null=False)
 
     def __str__(self):
-        return 'Recycle user %s' % (self.user_name)
+        result = 'Unknown: '
+        if self.account_type == RECYCLE_ACCOUNT_NORMAL_USER:
+            result = 'User - '
+        else:
+            result = 'Garbage Collector - '
+        return result + self.user_name
 
 
 class RecycleCreditRecord(models.Model):
@@ -117,7 +134,32 @@ class RecycleCreditRecord(models.Model):
         ordering = ['-timestamp']
 
     def __str__(self):
-        return 'Recycle credit %s' % (self.good_description)
+        return '%s - %s x%d - %s' % (self.user.user_name, self.good_description, self.quantity, str(self.timestamp))
+
+
+class RecyclePoint(models.Model):
+    point_id = models.BigAutoField(primary_key=True, null=False)
+    owner = models.ForeignKey(RecycleAccount, on_delete=models.CASCADE, null=False)
+    description = models.CharField(null=True, max_length=60)
+    longitude = models.FloatField(null=False)
+    latitude = models.FloatField(null=False)
+    bottle_num = models.IntegerField(null=True)
+
+    def __str__(self):
+        return '#%d %s' % (self.point_id, self.description)
+
+
+class RecycleCleaningRecord(models.Model):
+    user = models.ForeignKey(RecycleAccount, on_delete=models.CASCADE, null=False)
+    recycle_point = models.ForeignKey(RecyclePoint, on_delete=models.CASCADE, null=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    bottle_num = models.IntegerField(null=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return '%s - %s - %s' % (self.user.user_name, self.recycle_point.description, str(self.timestamp))
 
 
 class Feedback(models.Model):
@@ -130,4 +172,7 @@ class Feedback(models.Model):
         ordering = ['-timestamp']
 
     def __str__(self):
-        return 'Feedback %s' % (self.title)
+        user_name = 'Anonymous User'
+        if self.poster:
+            user_name = self.poster.user_name
+        return '%s - %s - %s' % (self.title, user_name, str(self.timestamp))
