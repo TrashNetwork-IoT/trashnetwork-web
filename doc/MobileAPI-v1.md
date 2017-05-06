@@ -725,7 +725,7 @@ If the requester is authenticated as a garbage collector and this recycle point 
 
 + `owner_id`: The user ID of the user who manages this recycle point.
 
-Successful response example:
+Successful response example of authenticated garbage collector:
 
 ```json
 {
@@ -779,7 +779,7 @@ GET recycle/recycle_record/{start_time}/{end_time}/{limit_num}
 | 404              | 200401      | No record |
 | 200              | 0           | -         |
 
-Successful response should contain a list consisting of info of recycle records.
+Successful response should contain a list consisting of info of recycle records, and records should be sort by recycle time(newest to oldest).
 
 Every record should contain following fields:
 
@@ -823,6 +823,62 @@ POST recycle/recycle_record/new_record
 | 422              | 200403      | The recycle point does not be managed by you |
 | 422              | 200404      | The recycle point is empty               |
 | 201              | 0           | Post recycle record successfully         |
+
+### 2.6 Credit Rank API 
+
+#### 2.6.1 (*) Get credit rank list
+
+1. Get credit rank list of current day.
+
+```
+GET recycle/credit_rank/day
+```
+
+2. Get credit rank list of current week.
+
+```
+GET recycle/credit_rank/week
+```
+
+##### Response
+
+| HTTP Status Code | result_code | message |
+| ---------------- | ----------- | ------- |
+| 200              | 0           | -       |
+
+Successful response should contain following fields:
+
++ `update_time`: Rank list update time, UNIX timestamp format(second unit).
+
+If requester has been authenticated, the response should contain following additional fields:
+
++ `rank`: the current rank of requester, integer. If requester is not in the rank list or the increased credits of requester during specific time period is 0, its value will be a **negative number**.
++ `credit`: increased credits of requester, integer.
+
+The response should also contain the rank list of at most top **50** users, and the list should be sort by increased credits during specific time period(highest to lowest)
+
+Each rank item should contain following fields:
+
++ `user_name`: user name, string.
++ `credit`: increased credits, integer.
+
+Successful response example of authenticated requester:
+
+```json
+{
+  "result_code": 0,
+  "message": "",
+  "update_time": 1493905775,
+  "rank": 233,
+  "credit": 1,
+  "rank_list": [
+    {
+      "user_name": "zero",
+      "credit": 10
+    }
+  ]
+}
+```
 
 ## 3. Public API
 

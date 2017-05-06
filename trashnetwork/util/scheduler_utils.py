@@ -5,6 +5,8 @@ import pytz
 from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
 from apscheduler.jobstores.redis import RedisJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.util import undefined
+
 from trashnetwork import settings
 from trashnetwork.util import mqtt_broker_utils
 
@@ -37,9 +39,10 @@ def stop_scheduler():
     print('Scheduler has stopped.')
 
 
-def add_interval_job(job_id: str, job_func, minutes: int, args: list):
+def add_interval_job(job_id: str, job_func, minutes: int, start_time: datetime=undefined, args: list=None):
     scheduler.add_job(job_func, trigger='interval', minutes=int(minutes),
-                      id=str(job_id), replace_existing=True, args=args)
+                      id=str(job_id), replace_existing=True, args=args,
+                      next_run_time=start_time)
 
 
 JOB_CLEANING_REMINDER_PREFIX = 'cleaning_reminder/trash_'

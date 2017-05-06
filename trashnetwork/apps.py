@@ -1,5 +1,6 @@
 import signal
 import sys
+import datetime
 from django.apps import AppConfig
 import django.dispatch
 from trashnetwork.util import mqtt_broker_utils, scheduler_utils
@@ -18,9 +19,15 @@ class TrashNetworkConfig(AppConfig):
         scheduler_utils.init_scheduler()
 
         from trashnetwork import models
+        from trashnetwork.view.v1.mobile.recycle import credit_rank
         for t in models.Trash.objects.all():
             scheduler_utils.add_cleaning_reminder(t.trash_id)
-
+        scheduler_utils.add_interval_job(job_id='credit_rank/day', job_func=credit_rank.update_rank_list,
+                                         minutes=30, start_time=datetime.datetime.now() + datetime.timedelta(seconds=3),
+                                         args=[credit_rank.RANK_LIST_TYPE_DAILY])
+        scheduler_utils.add_interval_job(job_id='credit_rank/week', job_func=credit_rank.update_rank_list,
+                                         minutes=30, start_time=datetime.datetime.now() + datetime.timedelta(seconds=3),
+                                         args=[credit_rank.RANK_LIST_TYPE_WEEKLY])
         signal.signal(signal.SIGINT, self.on_server_shutdown)
 
     def on_server_shutdown(self, signal, frame):
