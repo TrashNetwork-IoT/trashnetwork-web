@@ -159,6 +159,10 @@ TN_CLEANING_REMINDER = {
     'TIME_RANGE_END_WEEKDAY': 5
 }
 
+TN_RECYCLE_CREDIT_RANK = {
+    'UPDATE_INTERVAL_MINUTES': 2
+}
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
 

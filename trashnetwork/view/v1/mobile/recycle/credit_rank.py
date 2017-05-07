@@ -89,7 +89,7 @@ def get_daily_credit_rank(req: Request):
     user = account.token_check(req=req, optional=True)
     user_name = None
     if user is not None:
-        user_name = models.RecycleAccount.objects.filter(user_id=user.user_id).get()
+        user_name = models.RecycleAccount.objects.filter(user_id=user.user_id).get().user_name
     return get_credit_rank_response(rank_list=daily_credit_rank_list, update_time=daily_credit_rank_list_update_time,
                                     user_name=user_name)
 

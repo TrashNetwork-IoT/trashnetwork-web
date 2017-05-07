@@ -15,7 +15,7 @@ def get_credit_records(req: Request, start_time: str = None, end_time: str = Non
     user = account.token_check(req)
     credit_record_list = []
     for cr in models.RecycleCreditRecord.objects.filter(
-            view_utils.general_query_time_limit(end_time=end_time, start_time=start_time, user=user)):
+            view_utils.general_query_time_limit(end_time=end_time, start_time=start_time, user=user))[:int(limit_num)]:
         credit_record_list.append(view_utils.get_credit_record_dict(cr))
     if len(credit_record_list) == 0:
         raise CheckException(status=status.HTTP_404_NOT_FOUND, result_code=result_code.MR_CREDIT_RECORD_NOT_FOUND,
@@ -28,7 +28,7 @@ def recycle_bottle(req: Request):
     user = account.token_check(req)
     try:
         recycle_point = models.RecyclePoint.objects.filter(point_id=int(req.data['recycle_point_id'])).get()
-    except models.Trash.DoesNotExist:
+    except models.RecyclePoint.DoesNotExist:
         raise CheckException(status=status.HTTP_404_NOT_FOUND, result_code=result_code.MR_CREDIT_RECORD_RECYCLE_POINT_NOT_FOUND,
                              message=_('Recycle point not found'))
     if recycle_point.bottle_num is None:
