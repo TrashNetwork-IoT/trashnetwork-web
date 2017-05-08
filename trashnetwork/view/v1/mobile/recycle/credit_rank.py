@@ -73,7 +73,7 @@ def get_credit_rank_response(rank_list: list, update_time: datetime.datetime, us
             if rank['user_name'] == user_name:
                 user_rank = rank_list.index(rank)
                 credit = rank['credit']
-                while user_rank >= 0 and rank_list[user_rank - 1]['credit'] == credit:
+                while user_rank - 1 >= 0 and rank_list[user_rank - 1]['credit'] == credit:
                     user_rank = user_rank - 1
                 user_rank = user_rank + 1
                 break
