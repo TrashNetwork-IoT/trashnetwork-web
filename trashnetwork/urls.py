@@ -14,10 +14,11 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url, include
+from django.conf.urls.static import static
 from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     # API v1
     url(r'^trashnetwork/v1/', include('trashnetwork.view.v1.urls')),
-]
+] + static('trashnetwork/events/', document_root='trashnetwork/events')

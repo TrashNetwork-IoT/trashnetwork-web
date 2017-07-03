@@ -46,6 +46,16 @@ python ./manage.py migrate
 python ./manage.py compilemessages
 ```
 
+4. Compile web pages:
+```shell
+cd ..
+git clone git@github.com:TrashNetwork/trashnetwork-webpage.git
+cd trashnetwork-webpage
+gulp
+cd ..
+cp -r dist/* trashnetwork-web/trashnetwork/events
+```
+
 4. Start server:
 
 ```shell
