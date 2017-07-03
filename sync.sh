@@ -8,4 +8,14 @@ if [ -f sync_config.sh ]; then
     source sync_config.sh;
 fi
 
-rsync --recursive --copy-links --perms --times --delete --progress --human-readable --exclude=db.sqlite3 --exclude=migrations --exclude=__pycache__ --exclude=.DS_Store --exclude=*.log * "${remote_user}@${remote_host}:${remote_path}"
+rsync --recursive --copy-links --perms --times --delete --progress --human-readable \
+    --exclude=db.sqlite3 \
+    --exclude=migrations \
+    --exclude=__pycache__ \
+    --exclude=.DS_Store \
+    --exclude=bin \
+    --exclude=lib \
+    --exclude=pip-selfcheck.json \
+    --exclude=pyvenv.cfg \
+    --exclude=*.log \
+    * "${remote_user}@${remote_host}:${remote_path}"

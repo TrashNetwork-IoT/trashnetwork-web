@@ -92,3 +92,8 @@ trashnetwork/migrations/*
 .idea/*
 
 sync_config.sh
+
+# python -m venv items
+pip-selfcheck.json
+pyvenv.cfg
+bin
