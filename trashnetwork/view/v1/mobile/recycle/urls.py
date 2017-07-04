@@ -1,6 +1,6 @@
 from django.conf.urls import url
 from trashnetwork.view.v1.mobile.recycle import account as mobile_account
-from trashnetwork.view.v1.mobile.recycle import feedback, credit_record, recycle_point, recycle_record, credit_rank
+from trashnetwork.view.v1.mobile.recycle import feedback, credit_record, recycle_point, recycle_record, credit_rank, event
 
 urlpatterns = [
     # Mobile - Recycle - Account
@@ -11,7 +11,7 @@ urlpatterns = [
     url(r'^account/self$', mobile_account.self_info),
 
     # Mobile - Recycle - Feedback
-    url(r'^feedback/new_feekback$', feedback.post_feedback),
+    url(r'^feedback/new_feedback$', feedback.post_feedback),
 
     # Mobile - Recycle - Credit Record
     url(r'^credit/record/(?P<start_time>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$', credit_record.get_credit_records),
@@ -31,4 +31,9 @@ urlpatterns = [
     # Mobile - Recycle - Credit Rank
     url(r'^credit_rank/day', credit_rank.get_daily_credit_rank),
     url(r'^credit_rank/week', credit_rank.get_weekly_credit_rank),
+
+    # Mobile - Recycle - Event
+    url(r'^event/(?P<start_time>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$', event.get_events),
+    url(r'^event/(?P<end_time>\d+)/(?P<limit_num>\d+)$', event.get_events),
+    url(r'^event/(?P<limit_num>\d+)$', event.get_events),
 ]

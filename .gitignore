@@ -97,3 +97,6 @@ sync_config.sh
 pip-selfcheck.json
 pyvenv.cfg
 bin
+
+# Web pages
+trashnetwork/events/

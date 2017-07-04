@@ -17,7 +17,7 @@ def get_recycle_record(req: Request, start_time: str, end_time:str, limit_num: s
     for r in models.RecycleCleaningRecord.objects.filter(view_utils.general_query_time_limit(start_time=start_time,
                                                                                              end_time=end_time,
                                                                                              user=user))[:int(limit_num)]:
-        result_list.append(view_utils.get_recycle_record_dict(r))
+        result_list.append(view_utils.get_model_dict(r, excluded_fields=['user']))
     if len(result_list) == 0:
         raise CheckException(status=status.HTTP_404_NOT_FOUND, result_code=result_code.MR_RECYCLE_RECORD_NOT_FOUND,
                              message=_('No record'))

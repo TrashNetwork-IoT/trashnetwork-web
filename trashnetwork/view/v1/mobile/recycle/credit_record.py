@@ -16,7 +16,7 @@ def get_credit_records(req: Request, start_time: str = None, end_time: str = Non
     credit_record_list = []
     for cr in models.RecycleCreditRecord.objects.filter(
             view_utils.general_query_time_limit(end_time=end_time, start_time=start_time, user=user))[:int(limit_num)]:
-        credit_record_list.append(view_utils.get_credit_record_dict(cr))
+        credit_record_list.append(view_utils.get_model_dict(cr, excluded_fields=['user']))
     if len(credit_record_list) == 0:
         raise CheckException(status=status.HTTP_404_NOT_FOUND, result_code=result_code.MR_CREDIT_RECORD_NOT_FOUND,
                              message=_('Credit record not found'))

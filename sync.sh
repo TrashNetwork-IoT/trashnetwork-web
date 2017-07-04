@@ -8,7 +8,7 @@ if [ -f sync_config.sh ]; then
     source sync_config.sh;
 fi
 
-rsync --recursive --copy-links --perms --times --delete --progress --human-readable \
+rsync --recursive --copy-links --perms --times --progress --human-readable \
     --exclude=db.sqlite3 \
     --exclude=migrations \
     --exclude=__pycache__ \

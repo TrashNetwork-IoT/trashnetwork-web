@@ -1,6 +1,12 @@
+import os
+
+from django.core.files.storage import FileSystemStorage
 from django.db import models
 
 # Create your models here.
+from django.utils.safestring import mark_safe
+
+from trashnetwork import settings
 
 CLEANING_ACCOUNT_GENDER_MALE = 'M'
 CLEANING_ACCOUNT_GENDER_FEMALE = 'F'
@@ -72,7 +78,7 @@ class CleaningGroupMembership(models.Model):
 class CleaningGroupBulletin(models.Model):
     poster = models.ForeignKey(CleaningAccount, on_delete=models.CASCADE)
     group = models.ForeignKey(CleaningGroup, on_delete=models.CASCADE)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_column='post_time')
     title = models.CharField(max_length=60, null=False)
     text = models.TextField(null=False)
 
@@ -87,7 +93,7 @@ class CleaningGroupBulletin(models.Model):
 class CleaningWorkRecord(models.Model):
     user = models.ForeignKey(CleaningAccount, on_delete=models.CASCADE)
     trash = models.ForeignKey(Trash, on_delete=models.CASCADE)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_column='record_time')
 
     class Meta:
         unique_together = ('user', 'timestamp')
@@ -127,7 +133,7 @@ class RecycleCreditRecord(models.Model):
     good_description = models.CharField(null=False, max_length=100)
     quantity = models.IntegerField(null=False, default=1)
     credit = models.IntegerField(null=False, default=0)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_column='record_time')
 
     class Meta:
         unique_together = ('user', 'timestamp')
@@ -152,7 +158,7 @@ class RecyclePoint(models.Model):
 class RecycleCleaningRecord(models.Model):
     user = models.ForeignKey(RecycleAccount, on_delete=models.CASCADE, null=False)
     recycle_point = models.ForeignKey(RecyclePoint, on_delete=models.CASCADE, null=False)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_column='recycle_time')
     bottle_num = models.IntegerField(null=True)
 
     class Meta:
@@ -164,7 +170,7 @@ class RecycleCleaningRecord(models.Model):
 
 class Feedback(models.Model):
     poster = models.ForeignKey(RecycleAccount, on_delete=models.CASCADE, null=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_column='feedback_time')
     title = models.CharField(max_length=60, null=False)
     text = models.TextField(null=False)
 
@@ -176,3 +182,30 @@ class Feedback(models.Model):
         if self.poster:
             user_name = self.poster.user_name
         return '%s - %s - %s' % (self.title, user_name, str(self.timestamp))
+
+
+class OverwriteStorage(FileSystemStorage):
+    def get_available_name(self, name, **kwargs):
+        if self.exists(name):
+            os.remove(name)
+        return name
+
+
+class Event(models.Model):
+    title = models.CharField(max_length=50, null=False)
+    timestamp = models.DateTimeField(auto_now_add=True, db_column='release_time')
+    digest = models.CharField(max_length=120, null=True)
+    event_image = models.ImageField(null=True, upload_to='trashnetwork/events/assets/images', storage=OverwriteStorage())
+    url = models.CharField(max_length=256, null=True)
+
+    def event_image_preview(self):
+        if not self.event_image:
+            return 'No image'
+        return mark_safe('<img src="/%s" width=400/>' % self.event_image)
+
+    class Meta:
+        unique_together = ('title', 'timestamp')
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return '%s - %s' % (self.title, str(self.timestamp))
