@@ -1,5 +1,6 @@
 import datetime
 
+from django.views.generic.base import logger
 from requests import Request
 from rest_framework.decorators import api_view
 
@@ -52,7 +53,7 @@ def update_rank_list(rank_list_type: str = RANK_LIST_TYPE_DAILY):
     for key in user_credit_dict:
         rank_list.append({'user_name': key, 'credit': user_credit_dict[key]})
     rank_list.sort(key=lambda x: x['credit'], reverse=True)
-    print('Finish updating %s credit rank list' % rank_list_type)
+    logger.info('Finish updating %s credit rank list' % rank_list_type)
 
 
 def get_credit_rank_response(rank_list: list, update_time: datetime.datetime, user_name: str=None, limit_rank: int=50):

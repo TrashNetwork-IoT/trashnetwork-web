@@ -20,7 +20,7 @@ class TrashNetworkConfig(AppConfig):
         scheduler_utils.init_scheduler()
 
         from trashnetwork import models
-        from trashnetwork.view.v1.mobile.recycle import credit_rank
+        from trashnetwork.view.v1.mobile.recycle import credit_rank, recycle_point
         for t in models.Trash.objects.all():
             scheduler_utils.add_cleaning_reminder(t.trash_id)
         scheduler_utils.add_interval_job(job_id='credit_rank/day', job_func=credit_rank.update_rank_list,
@@ -31,6 +31,9 @@ class TrashNetworkConfig(AppConfig):
                                          minutes=settings.TN_RECYCLE_CREDIT_RANK['UPDATE_INTERVAL_MINUTES'],
                                          start_time=datetime.datetime.now() + datetime.timedelta(seconds=3),
                                          args=[credit_rank.RANK_LIST_TYPE_WEEKLY])
+        scheduler_utils.add_interval_job(job_id='coupon_point', job_func=recycle_point.update_red_packet_point,
+                                         minutes=settings.TN_RECYCLE_COUPON['UPDATE_INTERVAL_MINUTES'],
+                                         start_time=datetime.datetime.now() + datetime.timedelta(seconds=3))
         signal.signal(signal.SIGINT, self.on_server_shutdown)
 
     def on_server_shutdown(self, signal, frame):
