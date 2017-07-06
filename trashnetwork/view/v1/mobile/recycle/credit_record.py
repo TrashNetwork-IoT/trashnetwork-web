@@ -64,8 +64,7 @@ def recycle_bottle(req: Request):
             cache.set('%s%d' %(recycle_point.CACHE_KEY_RED_PACKET_PREFIX, rp.point_id), cache_red_packet, None)
 
     new_credit_record = models.RecycleCreditRecord(user=user,
-                                                   good_description='Recycled bottle',
-                                                   quantity=quantity,
+                                                   item_description='Recycled bottle x%d' % quantity,
                                                    credit=quantity + red_packet_credit)
     new_credit_record.save()
     user = models.RecycleAccount.objects.filter(user_id=user.user_id).get()

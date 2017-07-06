@@ -131,8 +131,7 @@ class RecycleAccount(models.Model):
 
 class RecycleCreditRecord(models.Model):
     user = models.ForeignKey(RecycleAccount, on_delete=models.CASCADE, null=False)
-    good_description = models.CharField(null=False, max_length=100)
-    quantity = models.IntegerField(null=False, default=1)
+    item_description = models.CharField(null=False, max_length=100)
     credit = models.IntegerField(null=False, default=0)
     timestamp = models.DateTimeField(auto_now_add=True, db_column='record_time')
 
@@ -141,7 +140,7 @@ class RecycleCreditRecord(models.Model):
         ordering = ['-timestamp']
 
     def __str__(self):
-        return '%s - %s x%d - %s' % (self.user.user_name, self.good_description, self.quantity, str(self.timestamp))
+        return '%s - %s x%d - %s' % (self.user.user_name, self.item_description, self.quantity, str(self.timestamp))
 
 
 class RecyclePoint(models.Model):

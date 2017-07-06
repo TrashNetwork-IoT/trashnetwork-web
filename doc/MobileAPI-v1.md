@@ -677,12 +677,11 @@ GET recycle/credit/record/{start_time}/{end_time}/{limit_num}
 | 404              | 200101      | Credit record not found |
 | 200              | 0           | -                       |
 
-Successful response should contain a list consisting of info of credit records, and records should be sort by post time(newest to oldest).
+Successful response should contain a list consisting of info of credit records, and records should be sort by record time(newest to oldest).
 
 Every work record should contain following fields:
 
-- `good_description`: good description, string.
-- `quantity`: quantity of good, integer.
+- `item_description`: item description, string.
 - `credit`: credit number relate to this record, integer. If user gain credits in this record, it should be a positive number, otherwise negative.
 - `record_time`: record time, UNIX timestamp format(second unit).
 
@@ -694,8 +693,7 @@ Successful response example:
   "message": "",
   "credit_record_list": [
     {
-      "good_description": "Bottle recycle",
-      "quantity": 1,
+      "good_description": "Recycled bottle x7",
       "credit": 1,
       "record_time": 1489827858
     }
@@ -728,7 +726,7 @@ POST recycle/credit/record/new/bottle_recycle
 | 422              | 200114      | Too far away from specific recycle point |
 | 201              | 0           | Recycle bottle successfully              |
 
-Response should contain credits that the user gain by recycling bottles this time.
+Response should contain credits that the user gain by recycling bottles this time, and red packet credits.
 
 Successful response example:
 
@@ -736,7 +734,8 @@ Successful response example:
 {
   "result_code": 0,
   "message": "Recycle bottle successfully",
-  "credit": 3
+  "credit": 3,
+  "red_packet_credit": 0
 }
 ```
 
@@ -784,6 +783,7 @@ Every recycle point can should contain following fields at least:
 - `longitude`: longitude of the recycle point's location, double.
 - `latitude`: latitude of the recycle point's location, double.
 - `bottle_recycle`: if this recycle point is able to accept bottles, boolean.
+- `is_red_packet_point`: true if this recycle point is a red packet point, boolean.
 
 If the requester is authenticated as a garbage collector and this recycle point is managed by him, it should contain following additional fields:
 
@@ -805,6 +805,7 @@ Successful response example of authenticated garbage collector:
       "longitude": 116.355769,
       "latitude": 39.96431,
       "bottle_num": 5,
+      "is_red_packet_point": false,
       "owner_id": 100
     }
   ]
@@ -1023,6 +1024,142 @@ Successful response example:
       "event_image": "Tm90IEZvdW5kOiAvCg=="
     }
   ]
+}
+```
+
+### 2.8 Credit Mall API
+
+#### 2.8.1 Query commodity list
+
+1. Query at most N latest commodity records until now.
+
+```
+GET recycle/credit_mall/commodity/{limit_num}
+```
+
+2. Query at most N latest commodity records until a specific end time point.
+
+```
+GET recycle/credit_mall/commodity/{end_time}/{limit_num}
+```
+
+3. Query at most N latest commodity records during a specific time period.
+
+```
+GET recycle/credit_mall/commodity/{start_time}/{end_time}/{limit_num}
+```
+
+- `{start_time}`: start time point, UNIX timestamp format(second unit).
+- `{end_time}`: end time point, UNIX timestamp format(second unit).
+- `{limit_num}`: the maximum number of commodity records that this API can return, integer.
+
+##### Response
+
+| HTTP Status Code | result_code | message             |
+| ---------------- | ----------- | ------------------- |
+| 404              | 200601      | commodity not found |
+| 200              | 0           | -                   |
+
+Successful response should contain a list of commodity records, and these records should be sort by added time(newest to oldest).
+
+Each commodity record should contain following fields:
+
++ `commodity_id`: ID of this commodity, long integer.
++ `added_time`: added time of this commodity, UNIX timestamp format(second unit)
++ `title`: title of this commodity, string.
++ `credit`: credits needed to buy one this commodity, integer.
++ `thumbnail`: preview image data of this commodity encoded by base64, string.
+
+Successful response example:
+
+```json
+{
+  "result_code": 0,
+  "message": "",
+  "commodity_list": [
+    {
+      "commodity_id": 1,
+      "title": "Xiaomi Redmi Note 4x",
+      "credit": 1,
+      "added_time": 1493905775,
+      "thumbnail": "Tm90IEZvdW5kOiAvCg=="
+    }
+  ]
+}
+```
+
+#### 2.8.2 Query commodity list by keyword
+
+1. Query at most N latest commodity records until now.
+
+```
+GET recycle/credit_mall/commodity/by_keyword/{keyword}/{limit_num}
+```
+
+2. Query at most N latest commodity records until a specific end time point.
+
+```
+GET recycle/credit_mall/commodity/by_keyword/{keyword}/{end_time}/{limit_num}
+```
+
+3. Query at most N latest commodity records during a specific time period.
+
+```
+GET recycle/credit_mall/commodity/by_keyword/{keyword}/{start_time}/{end_time}/{limit_num}
+```
+
+- `{keyword}`: keyword to query, string.
+- `{start_time}`: start time point, UNIX timestamp format(second unit).
+- `{end_time}`: end time point, UNIX timestamp format(second unit).
+- `{limit_num}`: the maximum number of commodity records that this API can return, integer.
+
+##### Response
+
+| HTTP Status Code | result_code | message             |
+| ---------------- | ----------- | ------------------- |
+| 404              | 200601      | commodity not found |
+| 200              | 0           | -                   |
+
+Successful response should contain a list of commodity records whose title contains keyword. Content format of response is identical to that described in section `2.8.1`.
+
+#### 2.8.3 Query detail of a commodity
+
+```
+GET recycle/credit_mall/commodity/detail/{commodity_id}
+```
+
++ `commodity_id`: ID of the commodity to query, long integer.
+
+##### Response
+
+| HTTP Status Code | result_code | message             |
+| ---------------- | ----------- | ------------------- |
+| 404              | 200601      | commodity not found |
+| 200              | 0           | -                   |
+
+Besides all fields of a commodity record(except `thumbnail`), the detail of a commodity should also contain following fields:
+
++ `commodity_images`: a list of commodity image data encoded by base64, list of string.
++ `description`: detail description of this commodity, string.
++ `stock`: current stock of this commodity, integer.
+
+Successful response example:
+
+```json
+{
+  "result_code": 0,
+  "message": "",
+  "commodity": {
+    "commodity_id": 1,
+    "title": "IPhone 8",
+    "description": "IPhone 8 is a trash phone.",
+    "credit": 1,
+    "added_time": 1493905775,
+    "commodity_images":[
+      "Tm90IEZvdW5kOiAvCg=="
+    ],
+    "stock": 100
+  }
 }
 ```
 
