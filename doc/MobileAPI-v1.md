@@ -577,6 +577,73 @@ Successful response example:
 }
 ```
 
+#### 2.1.6 * Query delivery address
+
+```
+GET recycle/account/delivery_address
+```
+
+##### Response
+
+| HTTP Status Code | result_code | message                    |
+| ---------------- | ----------- | -------------------------- |
+| 404              | 200021      | Delivery address not found |
+| 200              | 0           | -                          |
+
+Response should contain a list of delivery address info, each address should contain following field:
+
++ `name`: name of the receiver, string.
++ `phone_number`: phone number of the receiver, string.
++ `address`: address of the receiver, string.
+
+Optional fields:
+
++ `is_default`: true if this address is default address, boolean.
+
+Successful response example:
+
+```json
+{
+  "result_code": 0,
+  "message": "",
+  "address_list": [
+    {
+      "name": "Shengyun Zhou",
+      "phone_number": "123456",
+      "address": "BUPT",
+      "is_default": true
+    }
+  ]
+}
+```
+
+#### 2.1.7 * Set new delivery address
+
+**ATTENTION**: this API will overwrite all delivery addresses of a user.
+
+```
+PUT recycle/account/delivery_address/new
+```
+
+##### Request field
+
+`new_addr_list`: a list of **ALL** delivery addresses, each address should contain following field:
+
+- `name`: name of the receiver, string.
+- `phone_number`: phone number of the receiver, string.
+- `address`: address of the receiver, string.
+
+Optional fields:
+
+- `is_default`: true if this address is default address, boolean.
+
+##### Response
+
+| HTTP Status Code | result_code | message                                |
+| ---------------- | ----------- | -------------------------------------- |
+| 422              | 200016      | Illegal phone number                   |
+| 201              | 0           | Save new delivery address successfully |
+
 ### 2.2 Credit Record API
 
 #### 2.2.1 * Query credit record
@@ -908,10 +975,10 @@ GET recycle/event/{start_time}/{end_time}/{limit_num}
 
 ##### Response
 
-| HTTP Status Code | result_code | message        |
-| ---------------- | ----------- | -------------- |
-| 404              | 200501      | Event not foun |
-| 200              | 0           | -              |
+| HTTP Status Code | result_code | message         |
+| ---------------- | ----------- | --------------- |
+| 404              | 200501      | Event not found |
+| 200              | 0           | -               |
 
 Successful response should contain a list consisting of info of events, and events should be sort by release time(newest to oldest).
 
@@ -937,9 +1004,27 @@ Every event should contain following fields at least:
   http(s)://{HOST}/trashnetwork/events/first_event.html
   ```
 
-And may contain following extra field if any:
+Extra fields if any:
 
 + `event_image`: event image data encoded by base64, string.
+
+Successful response example:
+
+```json
+{
+  "result_code": 0,
+  "message": "",
+  "event_list": [
+    {
+      "title": "First event",
+      "digest": "First event",
+      "release_time": 1493905775,
+      "url": "/events/first_event.html",
+      "event_image": "Tm90IEZvdW5kOiAvCg=="
+    }
+  ]
+}
+```
 
 ## 3. Public API
 

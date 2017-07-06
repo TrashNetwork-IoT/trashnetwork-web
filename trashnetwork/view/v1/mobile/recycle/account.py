@@ -1,8 +1,11 @@
+import json
+
 from django.core.cache import cache
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.exceptions import ParseError
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -116,3 +119,41 @@ def self_info(req: Request):
     return view_utils.get_json_response(
         user=view_utils.get_recycle_user_basic_info_dict(user=user)
     )
+
+
+@api_view(['GET'])
+def get_delivery_addr(req: Request):
+    user = token_check(req=req)
+    user = RecycleAccount.objects.filter(user_id=user.user_id).get()
+    if not user.delivery_address:
+        raise CheckException(status=status.HTTP_404_NOT_FOUND, result_code=result_code.MR_DELIVER_ADDRESS_NOT_FOUND,
+                             message=_('Delivery address not found'))
+    try:
+        addr_list = json.loads(user.delivery_address)
+        if not isinstance(addr_list, list) or len(addr_list) == 0:
+            raise CheckException(status=status.HTTP_404_NOT_FOUND, result_code=result_code.MR_DELIVER_ADDRESS_NOT_FOUND,
+                                 message=_('Delivery address not found'))
+        return view_utils.get_json_response(address_list=addr_list)
+    except json.JSONDecodeError:
+        raise CheckException(status=status.HTTP_404_NOT_FOUND, result_code=result_code.MR_DELIVER_ADDRESS_NOT_FOUND,
+                             message=_('Delivery address not found'))
+
+
+@api_view(['PUT'])
+def set_new_delivery_addr(req: Request):
+    user = token_check(req=req)
+    user = RecycleAccount.objects.filter(user_id=user.user_id).get()
+    data_addr_list = req.data['new_addr_list']
+    if not isinstance(data_addr_list, list):
+        raise ParseError()
+    for addr in data_addr_list:
+        if not isinstance(addr, dict):
+            raise ParseError()
+        if not 'name' in addr or not 'phone_number' in addr or not 'address' in addr:
+            raise ParseError()
+        if not str(addr['phone_number']).isdigit():
+            raise CheckException(result_code=result_code.MR_ILLEGAL_PHONE, message=_('Illegal phone number'))
+    user.delivery_address = json.dumps(data_addr_list)
+    user.save()
+    return view_utils.get_json_response(status=status.HTTP_201_CREATED,
+                                        message=_('Save new delivery address successfully'))

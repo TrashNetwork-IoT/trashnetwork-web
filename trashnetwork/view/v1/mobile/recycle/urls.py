@@ -9,6 +9,8 @@ urlpatterns = [
     url(r'^account/logout$', mobile_account.logout),
     url(r'^account/check_login/(?P<user_id>\d+)$', mobile_account.check_login),
     url(r'^account/self$', mobile_account.self_info),
+    url(r'^account/delivery_address$', mobile_account.get_delivery_addr),
+    url(r'^account/delivery_address/new', mobile_account.set_new_delivery_addr),
 
     # Mobile - Recycle - Feedback
     url(r'^feedback/new_feedback$', feedback.post_feedback),

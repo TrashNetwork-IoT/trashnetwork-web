@@ -117,6 +117,7 @@ class RecycleAccount(models.Model):
     ), null=False, blank=False)
     email = models.EmailField(null=False)
     credit = models.IntegerField(null=False, default=0)
+    delivery_address = models.TextField(null=True)
     register_date = models.DateField(auto_now_add=True, null=False)
 
     def __str__(self):
