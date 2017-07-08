@@ -1215,33 +1215,41 @@ NOTE: If field `delivery_address` is not included in request body while correspo
 1. Query orders.
 
 ```
-recycle/credit_mall/order/{limit_num}
-recycle/credit_mall/order/{end_time}/{limit_num}
-recycle/credit_mall/order/{start_time}/{end_time}/{limit_num}
+GET recycle/credit_mall/order/{limit_num}
+GET recycle/credit_mall/order/{end_time}/{limit_num}
+GET recycle/credit_mall/order/{start_time}/{end_time}/{limit_num}
 ```
 
 2. Query orders with in progress status.
 
 ```
-recycle/credit_mall/order/by_status/in_progress/{limit_num}
-recycle/credit_mall/order/by_status/in_progress/{end_time}/{limit_num}
-recycle/credit_mall/order/by_status/in_progress/{start_time}/{end_time}/{limit_num}
+GET recycle/credit_mall/order/by_status/in_progress/{limit_num}
+GET recycle/credit_mall/order/by_status/in_progress/{end_time}/{limit_num}
+GET recycle/credit_mall/order/by_status/in_progress/{start_time}/{end_time}/{limit_num}
 ```
 
 3. Query orders with finished status.
 
 ```
-recycle/credit_mall/order/by_status/finished/{limit_num}
-recycle/credit_mall/order/by_status/finished/{end_time}/{limit_num}
-recycle/credit_mall/order/by_status/finished/{start_time}/{end_time}/{limit_num}
+GET recycle/credit_mall/order/by_status/finished/{limit_num}
+GET recycle/credit_mall/order/by_status/finished/{end_time}/{limit_num}
+GET recycle/credit_mall/order/by_status/finished/{start_time}/{end_time}/{limit_num}
 ```
 
 4. Query orders with cancelled status.
 
 ```
-recycle/credit_mall/order/by_status/cancelled/{limit_num}
-recycle/credit_mall/order/by_status/cancelled/{end_time}/{limit_num}
-recycle/credit_mall/order/by_status/cancelled/{start_time}/{end_time}/{limit_num}
+GET recycle/credit_mall/order/by_status/cancelled/{limit_num}
+GET recycle/credit_mall/order/by_status/cancelled/{end_time}/{limit_num}
+GET recycle/credit_mall/order/by_status/cancelled/{start_time}/{end_time}/{limit_num}
+```
+
+5. Query orders with delivering status.
+
+```
+GET recycle/credit_mall/order/by_status/delivering/{limit_num}
+GET recycle/credit_mall/order/by_status/delivering/{end_time}/{limit_num}
+GET recycle/credit_mall/order/by_status/delivering/{start_time}/{end_time}/{limit_num}
 ```
 
 - `{start_time}`: start time point, UNIX timestamp format(second unit).
@@ -1265,30 +1273,42 @@ Each order should contains the following fields:
 + `title`: title of corresponding commodity, string.
 + `quantity`: quantity, integer.
 + `credit`: credits needed to exchange one corresponding commodity, integer.
-+ `delivery_address`: delivery address, if any, object, which includes fields described in section `2.1.6`.
++ `delivery_address`: (if any)delivery address, object, which includes fields described in section `2.1.6`.
 + `remark`: remark of this order, if any. string.
 + `status`: status of this order, string, must be one of the following values:
   + `C`: cancelled.
   + `P`: in progress.
   + `F`: finished.
+  + `D`: (not available for virtual commodity)delivering.
++ `delivery`: (not available for virtual commodity)(if any)delivery info, object, which includes following fields:
+  + `company`: delivery company, string.
+  + `waybill_id`: ID of corresponding way bill, string.
 
 Successful response example:
 
 ```json
 {
-  "order_id": "CM20170708175054217509",
-  "submit_time": 1489827858,
-  "commodity_id": 1,
-  "title": "IPhone 8",
-  "quantity": 1,
-  "credit": 1,
-  "delivery_address": {
-    "name": "Shengyun Zhou",
-    "phone_number": "123456",
-    "address": "BUPT"
-  },
-  "remark": null,
-  "status": "P"
+  "result_code": 0,
+  "message": "",
+  "order_list": {
+    "order_id": "CM20170708175054217509",
+    "submit_time": 1489827858,
+    "commodity_id": 1,
+    "title": "IPhone 8",
+    "quantity": 1,
+    "credit": 1,
+    "delivery_address": {
+      "name": "Shengyun Zhou",
+      "phone_number": "123456",
+      "address": "BUPT"
+    },
+    "remark": null,
+    "status": "D",
+    "delivery": {
+      "company": "EMS",
+      "waybill_id": "1234567890"
+    }
+  }
 }
 ```
 
