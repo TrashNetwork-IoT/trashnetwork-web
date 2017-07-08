@@ -1067,7 +1067,7 @@ Each commodity record should contain following fields:
 + `commodity_id`: ID of this commodity, long integer.
 + `added_time`: added time of this commodity, UNIX timestamp format(second unit)
 + `title`: title of this commodity, string.
-+ `credit`: credits needed to buy one this commodity, integer.
++ `credit`: credits needed to exchange one this commodity, integer.
 + `thumbnail`: preview image data of this commodity encoded by base64, string.
 
 Successful response example:
@@ -1140,8 +1140,12 @@ GET recycle/credit_mall/commodity/detail/{commodity_id}
 Besides all fields of a commodity record(except `thumbnail`), the detail of a commodity should also contain following fields:
 
 + `commodity_images`: a list of commodity image data encoded by base64, list of string.
-+ `description`: detail description of this commodity, string.
++ `description`: detail description text of this commodity, string. NOTE: it can also be simple HTML code to display rich text.
 + `stock`: current stock of this commodity, integer.
++ `quantity_limit`: exchanging quantity limit for everyone, integer.
++ `type`: type of this commodity, string. Its value must be one of the following:
+  + `V`: virtual commodity, no need to deliver.
+  + `P`: normal physical commodity.
 
 Successful response example:
 
@@ -1158,12 +1162,135 @@ Successful response example:
     "commodity_images":[
       "Tm90IEZvdW5kOiAvCg=="
     ],
-    "stock": 100
+    "stock": 100,
+    "quantity_limit": 5,
+    "type": "P"
   }
 }
 ```
 
-## 3. Public API
+#### 2.8.4 * Submit order
+
+```
+POST recycle/credit_mall/order/new
+```
+
+##### Request field
+
++ `commodity_id`: ID of the commodity to exchange, long integer.
++ `quantity`: quantity, integer.
++ `delivery_address`: delivery address, object, which includes fields described in section `2.1.6`. NOTE: If the commodity is virtual, this field can be omitted.
++ `remark`: (optional)remark of this order, string.
+
+Request example:
+
+```json
+{
+  "commodity_id": 1,
+  "quantity": 1,
+  "delivery_address": {
+    "name": "Shengyun Zhou",
+    "phone_number": "123456",
+    "address": "BUPT"
+  },
+  "remark": null
+}
+```
+
+##### Response
+
+NOTE: If field `delivery_address` is not included in request body while corresponding commodity is not virtual, server should return standard 400 error.
+
+| HTTP Status Code | result_code | message                   |
+| :--------------- | ----------- | ------------------------- |
+| 404              | 200601      | commodity not found       |
+| 422              | 200016      | Illegal phone number      |
+| 422              | 200602      | Insufficient credit       |
+| 422              | 200603      | Insufficient stock        |
+| 422              | 200604      | Quantity exceeds limit    |
+| 201              | 0           | Submit order successfully |
+
+### 2.8.5 * Query order
+
+1. Query orders.
+
+```
+recycle/credit_mall/order/{limit_num}
+recycle/credit_mall/order/{end_time}/{limit_num}
+recycle/credit_mall/order/{start_time}/{end_time}/{limit_num}
+```
+
+2. Query orders with in progress status.
+
+```
+recycle/credit_mall/order/by_status/in_progress/{limit_num}
+recycle/credit_mall/order/by_status/in_progress/{end_time}/{limit_num}
+recycle/credit_mall/order/by_status/in_progress/{start_time}/{end_time}/{limit_num}
+```
+
+3. Query orders with finished status.
+
+```
+recycle/credit_mall/order/by_status/finished/{limit_num}
+recycle/credit_mall/order/by_status/finished/{end_time}/{limit_num}
+recycle/credit_mall/order/by_status/finished/{start_time}/{end_time}/{limit_num}
+```
+
+4. Query orders with cancelled status.
+
+```
+recycle/credit_mall/order/by_status/cancelled/{limit_num}
+recycle/credit_mall/order/by_status/cancelled/{end_time}/{limit_num}
+recycle/credit_mall/order/by_status/cancelled/{start_time}/{end_time}/{limit_num}
+```
+
+- `{start_time}`: start time point, UNIX timestamp format(second unit).
+- `{end_time}`: end time point, UNIX timestamp format(second unit).
+- `{limit_num}`: the maximum number of orders that this API can return, integer.
+
+##### Response
+
+| HTTP Status Code | result_code | message         |
+| :--------------- | ----------- | --------------- |
+| 404              | 200621      | order not found |
+| 200              | 0           | -               |
+
+Successful response should contain a list consisting of orders and they should be sort by submitting time(newest to oldest).
+
+Each order should contains the following fields:
+
++ `order_id`: ID of this order, string.
++ `submit_time`: submitting time of this order,  UNIX timestamp format(second unit).
++ `commodity_id`: ID of corresponding commodity, long integer.
++ `title`: title of corresponding commodity, string.
++ `quantity`: quantity, integer.
++ `credit`: credits needed to exchange one corresponding commodity, integer.
++ `delivery_address`: delivery address, if any, object, which includes fields described in section `2.1.6`.
++ `remark`: remark of this order, if any. string.
++ `status`: status of this order, string, must be one of the following values:
+  + `C`: cancelled.
+  + `P`: in progress.
+  + `F`: finished.
+
+Successful response example:
+
+```json
+{
+  "order_id": "CM2017070815480001",
+  "submit_time": 1489827858,
+  "commodity_id": 1,
+  "title": "IPhone 8",
+  "quantity": 1,
+  "credit": 1,
+  "delivery_address": {
+    "name": "Shengyun Zhou",
+    "phone_number": "123456",
+    "address": "BUPT"
+  },
+  "remark": null,
+  "status": "P"
+}
+```
 
 ### 3.1 Query trash cans
 
