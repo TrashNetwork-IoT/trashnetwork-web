@@ -11,7 +11,7 @@ from trashnetwork.view import result_code
 
 
 @api_view(['GET'])
-def get_recycle_record(req: Request, start_time: str, end_time:str, limit_num: str):
+def get_recycle_record(req: Request, limit_num: str, start_time: str=None, end_time: str=None):
     user = account.token_check(req=req, permission_limit=models.RECYCLE_ACCOUNT_GARBAGE_COLLECTOR)
     result_list = []
     for r in models.RecycleCleaningRecord.objects.filter(view_utils.general_query_time_limit(start_time=start_time,
