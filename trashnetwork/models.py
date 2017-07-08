@@ -209,3 +209,58 @@ class Event(models.Model):
 
     def __str__(self):
         return '%s - %s' % (self.title, str(self.timestamp))
+
+
+COMMODITY_TYPE_VIRTUAL = 'V'
+COMMODITY_TYPE_PHYSICAL = 'P'
+
+
+class Commodity(models.Model):
+    commodity_id = models.BigAutoField(primary_key=True, null=False)
+    title = models.CharField(max_length=100, null=False)
+    description = models.TextField(null=False)
+    timestamp = models.DateTimeField(auto_now_add=True, db_column='added_time')
+    credit = models.IntegerField(null=False)
+    thumbnail = models.ImageField(null=True,
+                                  upload_to='trashnetwork/commodities/assets/thumbnails',
+                                  storage=OverwriteStorage())
+    stock = models.IntegerField(null=False)
+    quantity_limit = models.IntegerField(null=False)
+
+    commodity_type = models.CharField(max_length=1, null=False, choices=(
+        (COMMODITY_TYPE_VIRTUAL, 'Virtual'),
+        (COMMODITY_TYPE_PHYSICAL, 'Physical'),
+    ))
+
+    class Meta:
+        unique_together = ('title', 'timestamp')
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return '%s - %s' % (self.title, str(self.timestamp))
+
+
+class CommodityImage(models.Model):
+    commodity = models.ForeignKey(Commodity, null=False)
+    commodity_image = models.ImageField(null=True,
+                                        upload_to='trashnetwork/commodities/assets/images',
+                                        storage=OverwriteStorage())
+
+ORDER_CANCELLED = 'C'
+ORDER_IN_PROGRESS = 'P'
+ORDER_FINISHED = 'F'
+
+
+class Order(models.Model):
+    order_id = models.CharField(max_length=24, null=False)
+    buyer = models.ForeignKey(RecycleAccount, on_delete=models.CASCADE, null=False)
+    timestamp = models.DateTimeField(auto_now_add=True, db_column='submit_time')
+    commodity = models.ForeignKey(Commodity, null=False)
+    quantity = models.IntegerField(null=False, default=1)
+    remark = models.CharField(max_length=100, null=True)
+    status = models.CharField(max_length=1, choices=(
+        (ORDER_CANCELLED, 'Cancelled'),
+        (ORDER_IN_PROGRESS, 'In progress'),
+        (ORDER_FINISHED, 'Finished'),
+    ), default=ORDER_IN_PROGRESS)
+    delivery_address = models.TextField(null=True)

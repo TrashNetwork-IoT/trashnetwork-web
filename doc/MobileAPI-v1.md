@@ -1276,7 +1276,7 @@ Successful response example:
 
 ```json
 {
-  "order_id": "CM2017070815480001",
+  "order_id": "CM20170708175054217509",
   "submit_time": 1489827858,
   "commodity_id": 1,
   "title": "IPhone 8",

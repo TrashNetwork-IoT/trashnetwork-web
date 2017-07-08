@@ -1,6 +1,15 @@
 from django.conf.urls import url
+
 from trashnetwork.view.v1.mobile.recycle import account as mobile_account
-from trashnetwork.view.v1.mobile.recycle import feedback, credit_record, recycle_point, recycle_record, credit_rank, event
+from trashnetwork.view.v1.mobile.recycle import \
+    feedback, \
+    credit_record, \
+    recycle_point, \
+    recycle_record, \
+    credit_rank, \
+    event, \
+    credit_mall
+from trashnetwork.models import ORDER_IN_PROGRESS, ORDER_FINISHED, ORDER_CANCELLED
 
 urlpatterns = [
     # Mobile - Recycle - Account
@@ -38,4 +47,44 @@ urlpatterns = [
     url(r'^event/(?P<start_time>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$', event.get_events),
     url(r'^event/(?P<end_time>\d+)/(?P<limit_num>\d+)$', event.get_events),
     url(r'^event/(?P<limit_num>\d+)$', event.get_events),
+
+    # Mobile - Recycle - Credit Mall
+    url(r'^credit_mall/commodity/(?P<start_time>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$', credit_mall.get_commodities),
+    url(r'^credit_mall/commodity/(?P<end_time>\d+)/(?P<limit_num>\d+)$', credit_mall.get_commodities),
+    url(r'^credit_mall/commodity/(?P<limit_num>\d+)$', credit_mall.get_commodities),
+    url(r'^credit_mall/commodity/by_keyword/(?P<keyword>.*?)/(?P<start_time>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$', credit_mall.get_commodities),
+    url(r'^credit_mall/commodity/by_keyword/(?P<keyword>.*?)/(?P<end_time>\d+)/(?P<limit_num>\d+)$', credit_mall.get_commodities),
+    url(r'^credit_mall/commodity/by_keyword/(?P<keyword>.*?)/(?P<limit_num>\d+)$', credit_mall.get_commodities),
+    url(r'^credit_mall/order/new', credit_mall.new_order),
+
+    url(r'^credit_mall/order/(?P<start_time>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$', credit_mall.get_orders),
+    url(r'^credit_mall/order/(?P<end_time>\d+)/(?P<limit_num>\d+)$', credit_mall.get_orders),
+    url(r'^credit_mall/order/(?P<limit_num>\d+)$', credit_mall.get_orders),
+    url(r'^credit_mall/order/by_status/in_progress/(?P<start_time>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$',
+        credit_mall.get_orders,
+        dict(order_status=ORDER_IN_PROGRESS)),
+    url(r'^credit_mall/order/by_status/in_progress/(?P<end_time>\d+)/(?P<limit_num>\d+)$',
+        credit_mall.get_orders,
+        dict(order_status=ORDER_IN_PROGRESS)),
+    url(r'^credit_mall/order/by_status/in_progress/(?P<limit_num>\d+)$',
+        credit_mall.get_orders,
+        dict(order_status=ORDER_IN_PROGRESS)),
+    url(r'^credit_mall/order/by_status/finished/(?P<start_time>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$',
+        credit_mall.get_orders,
+        dict(order_status=ORDER_FINISHED)),
+    url(r'^credit_mall/order/by_status/finished/(?P<end_time>\d+)/(?P<limit_num>\d+)$',
+        credit_mall.get_orders,
+        dict(order_status=ORDER_FINISHED)),
+    url(r'^credit_mall/order/by_status/finished/(?P<limit_num>\d+)$',
+        credit_mall.get_orders,
+        dict(order_status=ORDER_FINISHED)),
+    url(r'^credit_mall/order/by_status/cancelled/(?P<start_time>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$',
+        credit_mall.get_orders,
+        dict(order_status=ORDER_CANCELLED)),
+    url(r'^credit_mall/order/by_status/cancelled/(?P<end_time>\d+)/(?P<limit_num>\d+)$',
+        credit_mall.get_orders,
+        dict(order_status=ORDER_CANCELLED)),
+    url(r'^credit_mall/order/by_status/cancelled/(?P<limit_num>\d+)$',
+        credit_mall.get_orders,
+        dict(order_status=ORDER_CANCELLED)),
 ]

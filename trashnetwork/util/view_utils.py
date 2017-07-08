@@ -87,6 +87,11 @@ def general_query_time_limit(end_time=None, start_time=None, **kwargs):
     return q
 
 
+def get_encoded_file(filename: str):
+    with open(str(filename), 'rb') as f:
+        return base64.b64encode(bytes(f.read())).decode()
+
+
 def get_model_dict(model: models.models.Model, excluded_fields: list=None, modify_fields: dict=None):
     result_dict = {}
     for field in model._meta.get_fields():
@@ -114,9 +119,7 @@ def get_model_dict(model: models.models.Model, excluded_fields: list=None, modif
         elif isinstance(field, models.models.DateTimeField):
             field_value = int(field_value.timestamp())
         elif isinstance(field, (models.models.ImageField, models.models.FileField)):
-            f = open(str(field_value), 'rb')
-            field_value = base64.b64encode(bytes(f.read())).decode()
-            f.close()
+            field_value = get_encoded_file(field_value)
         if field.db_column and not modify_flag:
             key_name = field.db_column
         result_dict.update({key_name: field_value})
