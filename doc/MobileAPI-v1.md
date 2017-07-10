@@ -1208,6 +1208,7 @@ NOTE: If field `delivery_address` is not included in request body while correspo
 | 422              | 200602      | Insufficient credit       |
 | 422              | 200603      | Insufficient stock        |
 | 422              | 200604      | Quantity exceeds limit    |
+| 422              | 200605      | Illegal quantity(<=0)     |
 | 201              | 0           | Submit order successfully |
 
 ### 2.8.5 * Query order
@@ -1220,39 +1221,21 @@ GET recycle/credit_mall/order/{end_time}/{limit_num}
 GET recycle/credit_mall/order/{start_time}/{end_time}/{limit_num}
 ```
 
-2. Query orders with in progress status.
+2. Query orders by status.
 
 ```
-GET recycle/credit_mall/order/by_status/in_progress/{limit_num}
-GET recycle/credit_mall/order/by_status/in_progress/{end_time}/{limit_num}
-GET recycle/credit_mall/order/by_status/in_progress/{start_time}/{end_time}/{limit_num}
+GET recycle/credit_mall/order/by_status/{status}/{limit_num}
+GET recycle/credit_mall/order/by_status/{status}/{end_time}/{limit_num}
+GET recycle/credit_mall/order/by_status/{status}/{start_time}/{end_time}/{limit_num}
 ```
 
-3. Query orders with finished status.
++ `{status}`: order status, string, must be one of the following values:
+  + in_progress
+  + delivering
+  + cancelled
+  + finished
++ `{start_time}`: start time point, UNIX timestamp format(second unit).
 
-```
-GET recycle/credit_mall/order/by_status/finished/{limit_num}
-GET recycle/credit_mall/order/by_status/finished/{end_time}/{limit_num}
-GET recycle/credit_mall/order/by_status/finished/{start_time}/{end_time}/{limit_num}
-```
-
-4. Query orders with cancelled status.
-
-```
-GET recycle/credit_mall/order/by_status/cancelled/{limit_num}
-GET recycle/credit_mall/order/by_status/cancelled/{end_time}/{limit_num}
-GET recycle/credit_mall/order/by_status/cancelled/{start_time}/{end_time}/{limit_num}
-```
-
-5. Query orders with delivering status.
-
-```
-GET recycle/credit_mall/order/by_status/delivering/{limit_num}
-GET recycle/credit_mall/order/by_status/delivering/{end_time}/{limit_num}
-GET recycle/credit_mall/order/by_status/delivering/{start_time}/{end_time}/{limit_num}
-```
-
-- `{start_time}`: start time point, UNIX timestamp format(second unit).
 - `{end_time}`: end time point, UNIX timestamp format(second unit).
 - `{limit_num}`: the maximum number of orders that this API can return, integer.
 

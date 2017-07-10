@@ -21,4 +21,5 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     # API v1
     url(r'^trashnetwork/v1/', include('trashnetwork.view.v1.urls')),
-] + static('trashnetwork/events/', document_root='trashnetwork/events')
+] + static('trashnetwork/events/', document_root='trashnetwork/events') \
+  + static('trashnetwork/commodities/', document_root='trashnetwork/commodities')

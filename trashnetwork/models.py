@@ -226,11 +226,15 @@ class Commodity(models.Model):
                                   storage=OverwriteStorage())
     stock = models.IntegerField(null=False)
     quantity_limit = models.IntegerField(null=False)
-
     commodity_type = models.CharField(max_length=1, null=False, choices=(
         (COMMODITY_TYPE_VIRTUAL, 'Virtual'),
         (COMMODITY_TYPE_PHYSICAL, 'Physical'),
     ))
+
+    def commodity_thumbnail_preview(self):
+        if not self.thumbnail:
+            return 'No image'
+        return mark_safe('<img src="/%s" width=200/>' % self.thumbnail)
 
     class Meta:
         unique_together = ('title', 'timestamp')
@@ -242,25 +246,45 @@ class Commodity(models.Model):
 
 class CommodityImage(models.Model):
     commodity = models.ForeignKey(Commodity, null=False)
-    commodity_image = models.ImageField(null=True,
-                                        upload_to='trashnetwork/commodities/assets/images',
-                                        storage=OverwriteStorage())
+    image = models.ImageField(null=True,
+                              upload_to='trashnetwork/commodities/assets/images',
+                              storage=OverwriteStorage())
+
+    def commodity_image_preview(self):
+        if not self.image:
+            return 'No image'
+        return mark_safe('<img src="/%s" width=400/>' % self.image)
+
+    def __str__(self):
+        return '%s - %s' % (self.commodity.title, str(self.image))
+
 
 ORDER_CANCELLED = 'C'
+ORDER_DELIVERING = 'D'
 ORDER_IN_PROGRESS = 'P'
 ORDER_FINISHED = 'F'
 
 
 class Order(models.Model):
-    order_id = models.CharField(max_length=24, null=False)
+    order_id = models.CharField(max_length=24, primary_key=True)
     buyer = models.ForeignKey(RecycleAccount, on_delete=models.CASCADE, null=False)
     timestamp = models.DateTimeField(auto_now_add=True, db_column='submit_time')
-    commodity = models.ForeignKey(Commodity, null=False)
+    commodity_id = models.BigIntegerField(null=True)
+    title = models.CharField(max_length=100, null=False)
+    credit = models.IntegerField(null=False)
     quantity = models.IntegerField(null=False, default=1)
     remark = models.CharField(max_length=100, null=True)
     status = models.CharField(max_length=1, choices=(
-        (ORDER_CANCELLED, 'Cancelled'),
         (ORDER_IN_PROGRESS, 'In progress'),
+        (ORDER_DELIVERING, 'Delivering'),
+        (ORDER_CANCELLED, 'Cancelled'),
         (ORDER_FINISHED, 'Finished'),
     ), default=ORDER_IN_PROGRESS)
     delivery_address = models.TextField(null=True)
+    delivery = models.TextField(null=True)
+
+    def __str__(self):
+        return '%s - %s - %s' % (self.title, self.buyer.user_name, str(self.timestamp))
+
+    class Meta:
+        ordering = ['-timestamp']

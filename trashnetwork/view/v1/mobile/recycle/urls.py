@@ -9,7 +9,7 @@ from trashnetwork.view.v1.mobile.recycle import \
     credit_rank, \
     event, \
     credit_mall
-from trashnetwork.models import ORDER_IN_PROGRESS, ORDER_FINISHED, ORDER_CANCELLED
+from trashnetwork.models import ORDER_IN_PROGRESS, ORDER_FINISHED, ORDER_CANCELLED, ORDER_DELIVERING
 
 urlpatterns = [
     # Mobile - Recycle - Account
@@ -55,6 +55,7 @@ urlpatterns = [
     url(r'^credit_mall/commodity/by_keyword/(?P<keyword>.*?)/(?P<start_time>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$', credit_mall.get_commodities),
     url(r'^credit_mall/commodity/by_keyword/(?P<keyword>.*?)/(?P<end_time>\d+)/(?P<limit_num>\d+)$', credit_mall.get_commodities),
     url(r'^credit_mall/commodity/by_keyword/(?P<keyword>.*?)/(?P<limit_num>\d+)$', credit_mall.get_commodities),
+    url(r'^credit_mall/commodity/detail/(?P<commodity_id>\d+)$', credit_mall.get_commodity_detail),
     url(r'^credit_mall/order/new', credit_mall.new_order),
 
     url(r'^credit_mall/order/(?P<start_time>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$', credit_mall.get_orders),
@@ -87,4 +88,13 @@ urlpatterns = [
     url(r'^credit_mall/order/by_status/cancelled/(?P<limit_num>\d+)$',
         credit_mall.get_orders,
         dict(order_status=ORDER_CANCELLED)),
+    url(r'^credit_mall/order/by_status/delivering/(?P<start_time>\d+)/(?P<end_time>\d+)/(?P<limit_num>\d+)$',
+        credit_mall.get_orders,
+        dict(order_status=ORDER_DELIVERING)),
+    url(r'^credit_mall/order/by_status/delivering/(?P<end_time>\d+)/(?P<limit_num>\d+)$',
+        credit_mall.get_orders,
+        dict(order_status=ORDER_DELIVERING)),
+    url(r'^credit_mall/order/by_status/delivering/(?P<limit_num>\d+)$',
+        credit_mall.get_orders,
+        dict(order_status=ORDER_DELIVERING)),
 ]

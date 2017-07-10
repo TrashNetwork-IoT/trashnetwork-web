@@ -16,7 +16,7 @@ def create_test_data(sender, **kwargs):
 
     test_cleaner_account = CleaningAccount.objects.filter(user_id=123456)
     test_manager_account = CleaningAccount.objects.filter(user_id=233333)
-    test_recycle_account = RecycleAccount.objects.filter(user_name='RecycleTest')
+    test_recycle_account = RecycleAccount.objects.filter(user_name='test')
     img_file = open(os.path.join(BASE_DIR, 'trashnetwork/default_portrait.png'), 'rb')
     img_bin = bytes(img_file.read())
     if not test_cleaner_account:

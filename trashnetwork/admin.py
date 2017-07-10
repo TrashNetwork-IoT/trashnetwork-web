@@ -9,18 +9,22 @@ admin.site.register(RecycleAccount)
 admin.site.register(RecycleCreditRecord)
 admin.site.register(RecycleCleaningRecord)
 admin.site.register(Feedback)
+admin.site.register(Order)
 
 
 class EventImgAdminModel(admin.ModelAdmin):
-    fields = []
     readonly_fields = ['event_image_preview']
 
-    for f in Event._meta.get_fields():
-        if isinstance(f, (models.BinaryField, models.DateTimeField)):
-            continue
-        if f.name == 'id':
-            continue
-        fields.append(f.name)
-    fields.append('event_image_preview')
-
 admin.site.register(Event, EventImgAdminModel)
+
+
+class CommodityAdminModel(admin.ModelAdmin):
+    readonly_fields = ['commodity_thumbnail_preview']
+
+admin.site.register(Commodity, CommodityAdminModel)
+
+
+class CommodityImageAdminModel(admin.ModelAdmin):
+    readonly_fields = ['commodity_image_preview']
+
+admin.site.register(CommodityImage, CommodityImageAdminModel)
