@@ -16,9 +16,10 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.conf.urls.static import static
 from django.contrib import admin
+from trashnetwork import settings
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
+    url(r'^%s' % settings.ADMIN_URL, admin.site.urls),
     # API v1
     url(r'^trashnetwork/v1/', include('trashnetwork.view.v1.urls')),
 ] + static('trashnetwork/events/', document_root='trashnetwork/events') \

@@ -1068,7 +1068,7 @@ Each commodity record should contain following fields:
 + `added_time`: added time of this commodity, UNIX timestamp format(second unit)
 + `title`: title of this commodity, string.
 + `credit`: credits needed to exchange one this commodity, integer.
-+ `thumbnail`: preview image data of this commodity encoded by base64, string.
++ `thumbnail`: (if any)preview image data of this commodity encoded by base64, string.
 
 Successful response example:
 
@@ -1139,7 +1139,7 @@ GET recycle/credit_mall/commodity/detail/{commodity_id}
 
 Besides all fields of a commodity record(except `thumbnail`), the detail of a commodity should also contain following fields:
 
-+ `commodity_images`: a list of commodity image data encoded by base64, list of string.
++ `commodity_images`: (if any)a list of commodity image data encoded by base64, list of string.
 + `description`: detail description text of this commodity, string. NOTE: it can also be simple HTML code to display rich text.
 + `stock`: current stock of this commodity, integer.
 + `quantity_limit`: exchanging quantity limit for everyone, integer.

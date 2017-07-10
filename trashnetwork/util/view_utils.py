@@ -112,7 +112,7 @@ def get_model_dict(model: models.models.Model, excluded_fields: list=None, modif
         else:
             field_value = eval('model.%s' % field.name)
 
-        if field_value is None:
+        if not field_value:
             continue
         if isinstance(field, models.models.BinaryField):
             field_value = base64.b64encode(field_value).decode()

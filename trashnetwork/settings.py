@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     APP_NAME,
     'rest_framework',
+    'jsoneditor',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -197,3 +198,9 @@ STATIC_URL = '/static/'
 LOCALE_PATHS = [
     os.path.join(BASE_DIR, "trashnetwork/locale")
 ]
+
+ADMIN_URL = 'admin/'
+TN_ADMIN_BASE_URL = '%s%s' % (ADMIN_URL, APP_NAME)
+
+JSON_EDITOR_JS = 'https://cdn.bootcss.com/jsoneditor/4.2.1/jsoneditor.min.js'
+JSON_EDITOR_CSS = 'https://cdn.bootcss.com/jsoneditor/4.2.1/jsoneditor.min.css'
