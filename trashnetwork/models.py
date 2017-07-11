@@ -4,6 +4,7 @@ from django.core.files.storage import FileSystemStorage
 from django.db import models
 from django.utils.translation import ugettext as _
 from django.utils.safestring import mark_safe
+
 from trashnetwork import settings
 
 
@@ -11,7 +12,7 @@ class DummyJsonField(models.TextField):
     pass
 
 
-def preview_img_html(src: str, width: int = 400, margin_bottom: int=0):
+def preview_img_html(src: str, width: int = 400, margin_bottom: int = 0):
     if not src:
         return _('No image')
     return mark_safe('<img src="/%s" width=%d style="margin-bottom: %dpx"/>' % (src, width, margin_bottom))
@@ -149,13 +150,13 @@ class RecycleCreditRecord(models.Model):
         ordering = ['-timestamp']
 
     def __str__(self):
-        return '%s - %s x%d - %s' % (self.user.user_name, self.item_description, self.quantity, str(self.timestamp))
+        return '%s - %s - %s' % (self.user.user_name, self.item_description, str(self.timestamp))
 
 
 class RecyclePoint(models.Model):
     point_id = models.BigAutoField(primary_key=True, null=False)
     owner = models.ForeignKey(RecycleAccount, on_delete=models.CASCADE,
-                              null=False, limit_choices_to={'account_type': RECYCLE_ACCOUNT_GARBAGE_COLLECTOR},)
+                              null=False, limit_choices_to={'account_type': RECYCLE_ACCOUNT_GARBAGE_COLLECTOR}, )
     description = models.CharField(null=True, blank=True, max_length=60)
     longitude = models.FloatField(null=False)
     latitude = models.FloatField(null=False)
@@ -207,10 +208,16 @@ class Event(models.Model):
     digest = models.CharField(max_length=120, null=True, blank=True)
     event_image = models.ImageField(null=True, blank=True, upload_to='%s/events/assets/images' % settings.APP_NAME,
                                     storage=OverwriteStorage())
-    url = models.CharField(max_length=256, null=True, blank=True)
+    url = models.CharField(max_length=256, null=False, blank=False)
 
     def event_image_preview(self):
         return preview_img_html(src=str(self.event_image))
+
+    def event_page_link(self):
+        return mark_safe(
+            '<a href="/%s%s">/%s%s</a>' % (
+                settings.APP_NAME, self.url, settings.APP_NAME, self.url)
+        )
 
     class Meta:
         unique_together = ('title', 'timestamp')

@@ -54,7 +54,7 @@ admin.site.register(Feedback, FeedbackModelAdmin)
 
 
 class EventImgModelAdmin(CustomModelAdmin):
-    readonly_fields = ['event_image_preview']
+    readonly_fields = ['event_image_preview', 'event_page_link']
     search_fields = ['title', 'url', 'digest']
 
 
