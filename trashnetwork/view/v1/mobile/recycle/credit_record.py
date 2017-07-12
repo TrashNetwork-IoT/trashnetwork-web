@@ -31,7 +31,8 @@ def recycle_bottle(req: Request):
     try:
         rp = models.RecyclePoint.objects.filter(point_id=int(req.data['recycle_point_id'])).get()
     except models.RecyclePoint.DoesNotExist:
-        raise CheckException(status=status.HTTP_404_NOT_FOUND, result_code=result_code.MR_CREDIT_RECORD_RECYCLE_POINT_NOT_FOUND,
+        raise CheckException(status=status.HTTP_404_NOT_FOUND,
+                             result_code=result_code.MR_CREDIT_RECORD_RECYCLE_POINT_NOT_FOUND,
                              message=_('Recycle point not found'))
     if rp.bottle_num is None:
         raise CheckException(result_code=result_code.MR_CREDIT_RECORD_RECYCLE_POINT_NOT_FOUND,
@@ -53,15 +54,15 @@ def recycle_bottle(req: Request):
         quantity = settings.TN_RECYCLE_BOTTLE_MAX_QUANTITY
 
     red_packet_credit = 0
-    cache_red_packet = cache.get('%s%d' %(recycle_point.CACHE_KEY_RED_PACKET_PREFIX, rp.point_id))
+    cache_red_packet = cache.get('%s%d' % (recycle_point.CACHE_KEY_RED_PACKET_PREFIX, rp.point_id))
     max_red_packet_credit = recycle_point.check_red_packet_valid(cache_red_packet, rp.point_id)
     if max_red_packet_credit > 0:
         if max_red_packet_credit > quantity:
             max_red_packet_credit = quantity
-        if random.random() < settings.TN_RECYCLE_COUPON['RED_PACKET_PROBABILITY']:
+        if random.random() < recycle_point.RED_PACKET_PROBABILITY:
             red_packet_credit = random.randint(1, max_red_packet_credit)
             cache_red_packet['total'] -= red_packet_credit
-            cache.set('%s%d' %(recycle_point.CACHE_KEY_RED_PACKET_PREFIX, rp.point_id), cache_red_packet, None)
+            cache.set('%s%d' % (recycle_point.CACHE_KEY_RED_PACKET_PREFIX, rp.point_id), cache_red_packet, None)
 
     new_credit_record = models.RecycleCreditRecord(user=user,
                                                    item_description='Recycled bottle x%d' % quantity,

@@ -5,7 +5,7 @@ from django.contrib.auth import admin as auth_admin
 from django.conf.urls import url
 from django.template import RequestContext
 from django.utils.translation import ugettext as _
-from trashnetwork.view.admin import push_console
+from trashnetwork.view.admin import push_console, red_packet_scheduler
 from trashnetwork import settings
 
 
@@ -17,7 +17,9 @@ class CustomAdminSite(admin.AdminSite):
         url_patterns = super(CustomAdminSite, self).get_urls()
         return url_patterns + [
             url(r'^push_console$', push_console.push_console_view),
-            url(r'^push_console/api/push_notification', push_console.push_notification)
+            url(r'^push_console/api/push_notification$', push_console.push_notification),
+            url(r'^red_packet_scheduler$', red_packet_scheduler.red_packet_scheduler_view),
+            url(r'^red_packet_scheduler/api/schedule$', red_packet_scheduler.schedule_red_packet)
         ]
 
 
@@ -34,6 +36,7 @@ class CustomMenu(DefaultMenu):
                 items.MenuItem(_('Tools'),
                                children=[
                                    items.MenuItem(_('Push Console'), '/%spush_console' % settings.ADMIN_URL),
+                                   items.MenuItem(_('Red Packet Scheduler'), '/%sred_packet_scheduler' % settings.ADMIN_URL),
                                ]
                                ),
             ]

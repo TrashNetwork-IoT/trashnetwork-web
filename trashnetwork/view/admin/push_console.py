@@ -1,7 +1,6 @@
 from django.http import HttpRequest, HttpResponseForbidden, HttpResponseNotAllowed
 from django.template.response import TemplateResponse
 from django.views.decorators.csrf import csrf_exempt
-from requests import Request
 from rest_framework import status
 
 from trashnetwork import admin_site, settings

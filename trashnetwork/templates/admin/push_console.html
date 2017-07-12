@@ -12,7 +12,7 @@
     {{ media }}
 {% endblock %}
 {% block content %}
-    <p>Here you can push a notification to all users.</p>
+    <p>Push a notification to all users.</p>
     <form>
         <div class="module aligned">
             <div class="form-row">
@@ -34,7 +34,7 @@
                 <div>
                     <label class="required" for="id_ttl">Time to live:</label>
                     <input type="number" name="ttl" class="vIntegerField"
-                           id="id_ttl" maxlength="20" value="1">
+                           id="id_ttl" maxlength="5" value="1">
                     <span>Hours</span>
                     <div class="help">How long will the offline message keep</div>
                 </div>
@@ -88,15 +88,17 @@
                     if (jqXHR.status === 0 || exception === 'timeout') {
                         msg = 'Network is unavailable or timeouts';
                     } else {
-                        var data = null;
-                        try {
-                            data = JSON.parse(jqXHR.responseText);
-                            msg = data.message;
-                            if (jqXHR.status === 500)
-                                msg = 'Server internal error';
-                        } catch (e) {
-                            console.error(e);
-                            msg = 'Unknown error';
+                        if (jqXHR.status === 500)
+                            msg = 'Server internal error';
+                        else {
+                            var data = null;
+                            try {
+                                data = JSON.parse(jqXHR.responseText);
+                                msg = data.message;
+                            } catch (e) {
+                                console.error(e);
+                                msg = 'Unknown error';
+                            }
                         }
                     }
                     $('#id_status').css({color: 'red'});

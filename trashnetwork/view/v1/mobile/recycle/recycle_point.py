@@ -12,26 +12,42 @@ import random
 import datetime
 
 CACHE_KEY_RED_PACKET_PREFIX = 'recycle_red_packet/'
+JOB_RED_PACKET_POINT = 'red_packet_point'
+RED_PACKET_PROBABILITY = 0
 
 
-def update_red_packet_point():
+def clear_red_packet(max_point_id: int=None):
+    if max_point_id is None:
+        max_point_id = int(models.RecyclePoint.objects.all().aggregate(Max('point_id'))['point_id__max'])
+    i = 1
+    while i <= max_point_id:
+        cache.delete('%s%d' % (CACHE_KEY_RED_PACKET_PREFIX, i))
+        i += 1
+
+
+def update_red_packet_point(args: dict):
     point_total = models.RecyclePoint.objects.all().count()
     max_point_id = int(models.RecyclePoint.objects.all().aggregate(Max('point_id'))['point_id__max'])
-    red_packet_point_count = int(point_total * settings.TN_RECYCLE_COUPON['MAX_RED_PACKET_POINT_RATIO'])
+    clear_red_packet(max_point_id)
+
+    red_packet_point_count = int(point_total * args['max_red_packet_point_ratio'])
     if red_packet_point_count < 1:
         red_packet_point_count = 1
     red_packet_point_count = random.randint(1, red_packet_point_count)
+
     i = 1
     while i <= red_packet_point_count:
         red_packet_point_id = random.randint(1, max_point_id)
-        red_packet_total = random.randint(settings.TN_RECYCLE_COUPON['EACH_MIN_RED_PACKET_CREDIT'],
-                                          settings.TN_RECYCLE_COUPON['EACH_MAX_RED_PACKET_CREDIT'])
-        last_time = random.randint(settings.TN_RECYCLE_COUPON['RED_PACKET_LAST_MIN_TIME_MINUTE'],
-                                   settings.TN_RECYCLE_COUPON['RED_PACKET_LAST_MAX_TIME_MINUTE'])
+        red_packet_total = random.randint(args['each_min_red_packet_credit'],
+                                          args['each_max_red_packet_credit'])
+        last_time = random.randint(args['each_min_last_time'],
+                                   args['each_max_last_time'])
         cache.set('%s%d' % (CACHE_KEY_RED_PACKET_PREFIX, red_packet_point_id),
                   {'total': red_packet_total, 'expire': int(datetime.datetime.now().timestamp()) + last_time * 60},
                   None)
         i += 1
+    global RED_PACKET_PROBABILITY
+    RED_PACKET_PROBABILITY = args['probability']
     logger.info('Finish to refresh red packet point')
 
 

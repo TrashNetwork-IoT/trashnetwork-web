@@ -1,0 +1,180 @@
+{% extends "admin/base_site.html" %}
+{% load admin_tools_menu_tags %}
+{% load staticfiles %}
+{% block extrahead %}
+    {{ block.super }}
+    <script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+    {{ media }}
+{% endblock %}
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}"/>
+    {{ media }}
+{% endblock %}
+{% block content %}
+    <p>Manage red packet scheduler.</p>
+    <form>
+        <div class="module aligned wide">
+            <div class="form-row">
+                <div>
+                    <label class="required" for="id_interval">Update interval:</label>
+                    <input type="number" name="interval" class="vIntegerField"
+                           id="id_interval" maxlength="5" value="10"> Minutes
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label class="required" for="id_max_point_ratio">Maximum red packet point ratio:</label>
+                    <input type="number" name="max_point_ratio" class="vIntegerField"
+                           id="id_max_point_ratio" maxlength="5" value="0.6">
+                    <div class="help">Valid range: 0 <= ratio <= 1.</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label class="required" for="id_each_min_credit">Minimum total red packet credits of a red packet
+                        point:</label>
+                    <input type="number" name="each_min_credit" class="vIntegerField"
+                           id="id_each_min_credit" maxlength="5" value="10">
+                    <div class="help">Minimum must not be larger than maximum.</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label class="required" for="id_each_max_credit">Maximum total red packet credits of a red packet
+                        point:</label>
+                    <input type="number" name="each_max_credit" class="vIntegerField"
+                           id="id_each_max_credit" maxlength="10" value="100">
+                    <div class="help">Minimum must not be larger than maximum.</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label class="required" for="id_probability">Probability of getting a red packet:</label>
+                    <input type="number" name="probability" class="vIntegerField"
+                           id="id_probability" maxlength="5" value="0.5">
+                    <div class="help">Valid range: 0 <= probability <= 1.</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label class="required" for="id_each_min_last_time">Minimum last time of a red packet point:</label>
+                    <input type="number" name="each_min_last_time" class="vIntegerField"
+                           id="id_each_min_last_time" maxlength="5" value="6"> Minutes
+                    <div class="help">
+                        <ul>
+                            <li>Minimum must not be larger than maximum.</li>
+                            <li>This value should not be larger than update interval.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label class="required" for="id_each_max_last_time">Maximum last time of a red packet point:</label>
+                    <input type="number" name="each_max_last_time" class="vIntegerField"
+                           id="id_each_max_last_time" maxlength="5" value="10"> Minutes
+                    <div class="help">
+                        <ul>
+                            <li>Minimum must not be larger than maximum.</li>
+                            <li>This value should not be larger than update interval.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Scheduler status:</label>
+                    <div id="id_status" class="readonly">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="submit-row">
+            <p class="deletelink-box">
+                <a class="deletelink" style="cursor: pointer" onclick="onBtnScheduleClick(false)">
+                    Stop scheduler
+                </a>
+            </p>
+            <input type="button" value="(Re)start scheduler" class="default" onclick="onBtnScheduleClick(true)">
+        </div>
+    </form>
+
+    <script type="text/javascript">
+        {% if is_scheduler_running %}
+            var is_scheduler_running = true;
+        {% else %}
+            var is_scheduler_running = false;
+        {% endif %}
+        function showSchedulerStatus() {
+            if (is_scheduler_running) {
+                $('#id_status').css({'color': 'green'});
+                $('#id_status').text('Running');
+            } else {
+                $('#id_status').css({'color': 'red'});
+                $('#id_status').text('Stopped');
+            }
+        }
+        showSchedulerStatus();
+
+        function scheduleReq(post_data) {
+            $.ajax('red_packet_scheduler/api/schedule', {
+                method: 'POST',
+                dataType: 'json',
+                data: post_data,
+                success: function (data) {
+                    is_scheduler_running = data.scheduler_running;
+                    showSchedulerStatus();
+                },
+                error: function (jqXHR, exception, http_err) {
+                    var msg = '';
+                    if (jqXHR.status === 0 || exception === 'timeout') {
+                        msg = 'Network is unavailable or timeouts';
+                    } else {
+                        if (jqXHR.status === 500)
+                            msg = 'Server internal error';
+                        else {
+                            var data = null;
+                            try {
+                                data = JSON.parse(jqXHR.responseText);
+                                msg = data.message;
+                            } catch (e) {
+                                console.error(e);
+                                msg = 'Unknown error';
+                            }
+                        }
+                    }
+                    $('#id_status').css({color: 'red'});
+                    $('#id_status').text(msg);
+                },
+            });
+        }
+
+        function onBtnScheduleClick(restart) {
+            $('#id_status').css({color: 'black'});
+            var post_data;
+            if (restart) {
+                $('#id_status').text('(Re)starting scheduler...');
+                post_data = {
+                    restart: 1,
+                    update_interval: parseInt($('#id_interval').val()),
+                    max_red_packet_point_ratio: parseFloat($('#id_max_point_ratio').val()),
+                    each_min_red_packet_credit: parseInt($('#id_each_min_credit').val()),
+                    each_max_red_packet_credit: parseInt($('#id_each_max_credit').val()),
+                    probability: parseFloat($('#id_probability').val()),
+                    each_min_last_time: parseInt($('#id_each_min_last_time').val()),
+                    each_max_last_time: parseInt($('#id_each_max_last_time').val()),
+                };
+            } else {
+                $('#id_status').text('Stopping scheduler...');
+                post_data = {
+                    restart: 0
+                }
+            }
+            scheduleReq(post_data);
+        }
+    </script>
+
+{% endblock %}
+

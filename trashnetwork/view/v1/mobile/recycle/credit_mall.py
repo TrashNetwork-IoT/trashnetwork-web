@@ -1,4 +1,5 @@
 import json
+import threading
 
 from django.utils import timezone
 from rest_framework import status
@@ -44,63 +45,84 @@ def get_commodity_detail(req: Request, commodity_id: str):
                              result_code=result_code.MR_COMMODITY_NOT_FOUND,
                              message=_('Commodity not found'))
 
+commodity_lock_dict = {}
+lock_dict_lock = threading.Lock()
+
 
 @api_view(['POST'])
 def new_order(req: Request):
+    global lock_dict_lock
+    global commodity_lock_dict
     user = token_check(req=req)
     user = models.RecycleAccount.objects.filter(user_id=user.user_id).get()
     order = models.Order(buyer=user)
+    order.quantity = int(req.data['quantity'])
+    if order.quantity <= 0:
+        raise CheckException(result_code=result_code.MR_ILLEGAL_QUANTITY,
+                             message=_('Illegal quantity(<=0)'))
 
     try:
-        commodity = models.Commodity.objects.filter(commodity_id=int(req.data['commodity_id'])).get()
+        commodity_id = int(req.data['commodity_id'])
+        commodity = models.Commodity.objects.get(commodity_id=commodity_id)
     except models.Commodity.DoesNotExist:
         raise CheckException(status=status.HTTP_404_NOT_FOUND,
                              result_code=result_code.MR_COMMODITY_NOT_FOUND,
                              message=_('Commodity not found'))
 
-    if commodity.commodity_type == models.COMMODITY_TYPE_PHYSICAL:
-        if 'delivery_address' not in req.data:
-            raise ParseError()
-        addr = req.data['delivery_address']
-        if not 'name' in addr or not 'phone_number' in addr or not 'address' in addr:
-            raise ParseError()
-        if not str(addr['phone_number']).isdigit():
-            raise CheckException(result_code=result_code.MR_ILLEGAL_PHONE, message=_('Illegal phone number'))
-        order.delivery_address = to_json(addr)
+    lock_dict_lock.acquire()
+    if str(commodity_id) not in commodity_lock_dict:
+        commodity_lock_dict.update({str(commodity_id): threading.Lock()})
+    commodity_lock = commodity_lock_dict[str(commodity_id)]
+    lock_dict_lock.release()
 
-    order.quantity = int(req.data['quantity'])
-    if order.quantity <= 0:
-        raise CheckException(result_code=result_code.MR_ILLEGAL_QUANTITY,
-                             message=_('Illegal quantity(<=0)'))
-    if order.quantity > commodity.stock:
-        raise CheckException(status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                             result_code=result_code.MR_INSUFFICIENT_STOCK,
-                             message=_('Insufficient stock'))
-    if order.quantity > commodity.quantity_limit:
-        raise CheckException(status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                             result_code=result_code.MR_QUANTITY_EXCEEDS_LIMIT,
-                             message=_('Quantity exceeds limit'))
-    if commodity.credit * order.quantity > user.credit:
-        raise CheckException(status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                             result_code=result_code.MR_INSUFFICIENT_CREDIT,
-                             message=_('Insufficient credit'))
+    commodity_lock.acquire()
+    try:
+        if commodity.commodity_type == models.COMMODITY_TYPE_PHYSICAL:
+            if 'delivery_address' not in req.data:
+                raise ParseError()
+            addr = req.data['delivery_address']
+            if not 'name' in addr or not 'phone_number' in addr or not 'address' in addr:
+                raise ParseError()
+            if not str(addr['phone_number']).isdigit():
+                raise CheckException(result_code=result_code.MR_ILLEGAL_PHONE, message=_('Illegal phone number'))
+            order.delivery_address = to_json(addr)
 
-    order.order_id = timezone.datetime.now().strftime('CM%Y%m%d%H%M%S%f')
-    order.credit = commodity.credit
-    order.title = commodity.title
-    order.commodity_id = commodity.commodity_id
+        if order.quantity > commodity.stock:
+            raise CheckException(status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                 result_code=result_code.MR_INSUFFICIENT_STOCK,
+                                 message=_('Insufficient stock'))
+        if order.quantity > commodity.quantity_limit:
+            raise CheckException(status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                 result_code=result_code.MR_QUANTITY_EXCEEDS_LIMIT,
+                                 message=_('Quantity exceeds limit'))
+        if commodity.credit * order.quantity > user.credit:
+            raise CheckException(status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                 result_code=result_code.MR_INSUFFICIENT_CREDIT,
+                                 message=_('Insufficient credit'))
 
-    if 'remark' in req.data:
-        order.remark = req.data['remark']
+        commodity.stock -= order.quantity
+        commodity.save()
 
-    order.save()
-    new_credit_record = models.RecycleCreditRecord(user=user,
-                                                   item_description='%s x%d' %
-                                                                    (commodity.title, order.quantity),
-                                                   credit=-(commodity.credit * order.quantity))
-    new_credit_record.save()
-    user.credit += new_credit_record.credit
-    user.save()
+        order.order_id = timezone.datetime.now().strftime('CM%Y%m%d%H%M%S%f')
+        order.credit = commodity.credit
+        order.title = commodity.title
+        order.commodity_id = commodity.commodity_id
+
+        if 'remark' in req.data:
+            order.remark = req.data['remark']
+
+        order.save()
+        new_credit_record = models.RecycleCreditRecord(user=user,
+                                                       item_description='%s x%d' %
+                                                                        (commodity.title, order.quantity),
+                                                       credit=-(commodity.credit * order.quantity))
+        new_credit_record.save()
+        user.credit += new_credit_record.credit
+        user.save()
+    except Exception as e:
+        raise e
+    finally:
+        commodity_lock.release()
     return view_utils.get_json_response(status=status.HTTP_201_CREATED, message=_('Submit order successfully'))
 
 
