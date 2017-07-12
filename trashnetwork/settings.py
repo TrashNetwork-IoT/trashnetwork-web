@@ -15,7 +15,6 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
@@ -27,12 +26,14 @@ DEBUG = True
 DEFAULT_CHARSET = 'utf-8'
 ALLOWED_HOSTS = ['*']
 
-
 # Application definition
 
 APP_NAME = 'trashnetwork'
 
 INSTALLED_APPS = [
+    'admin_tools',
+    'admin_tools.theming',
+    'admin_tools.menu',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -63,13 +64,18 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],
-        'APP_DIRS': True,
+        # 'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+            ],
+            'loaders': [
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader',
+                'admin_tools.template_loaders.Loader'
             ],
         },
     },
@@ -95,7 +101,7 @@ DATABASES = {
     }
 }
 
-#Cache
+# Cache
 CACHES = {
     'default': {
         'BACKEND': 'redis_cache.RedisCache',
@@ -188,7 +194,6 @@ USE_L10N = True
 
 USE_TZ = False
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
@@ -204,3 +209,13 @@ TN_ADMIN_BASE_URL = '%s%s' % (ADMIN_URL, APP_NAME)
 
 JSON_EDITOR_JS = 'https://cdn.bootcss.com/jsoneditor/4.2.1/jsoneditor.min.js'
 JSON_EDITOR_CSS = 'https://cdn.bootcss.com/jsoneditor/4.2.1/jsoneditor.min.css'
+
+JPUSH_AUTH_BASE64 = 'NGU3YzA3NTg5M2M5MjczZGVkZDEwYzk1Ojk1NTRhN2ZjNTZlMGViNTlmMzQwYWU4Yg=='
+
+ADMIN_TOOLS_INDEX_DASHBOARD = {
+    'trashnetwork.admin_site.site': 'admin_tools.dashboard.DefaultIndexDashboard',
+}
+
+ADMIN_TOOLS_MENU = {
+    'trashnetwork.admin_site.site': 'trashnetwork.admin_site.CustomMenu',
+}

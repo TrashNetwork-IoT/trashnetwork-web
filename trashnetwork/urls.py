@@ -15,11 +15,11 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.conf.urls.static import static
-from django.contrib import admin
-from trashnetwork import settings
+from trashnetwork import settings, admin_site
 
 urlpatterns = [
-    url(r'^%s' % settings.ADMIN_URL, admin.site.urls),
+    url(r'^%s' % settings.ADMIN_URL, admin_site.site.urls),
+    url(r'^admin_tools/', include('admin_tools.urls')),
     # API v1
     url(r'^trashnetwork/v1/', include('trashnetwork.view.v1.urls')),
 ] + static('trashnetwork/events/', document_root='trashnetwork/events') \

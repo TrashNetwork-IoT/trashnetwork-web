@@ -27,6 +27,10 @@ The web server of TrashNetwork project.
 
   + django-jsoneditor
 
+  + requests
+
+  + django-admin-tools
+
 ## Build and Start
 
 1. Init database as MySQL root user:

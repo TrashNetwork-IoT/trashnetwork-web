@@ -1,4 +1,5 @@
 from django.contrib import admin
+from trashnetwork import admin_site
 from jsoneditor.forms import JSONEditor
 from .models import *
 
@@ -17,7 +18,7 @@ class RecyclePointModelAdmin(CustomModelAdmin):
     search_fields = ['point_id', 'description', 'owner__user_name']
 
 
-admin.site.register(RecyclePoint, RecyclePointModelAdmin)
+admin_site.site.register(RecyclePoint, RecyclePointModelAdmin)
 
 
 class RecycleAccountModelAdmin(CustomModelAdmin):
@@ -26,7 +27,7 @@ class RecycleAccountModelAdmin(CustomModelAdmin):
     search_fields = ['user_name']
 
 
-admin.site.register(RecycleAccount, RecycleAccountModelAdmin)
+admin_site.site.register(RecycleAccount, RecycleAccountModelAdmin)
 
 
 class RecycleCreditRecordModelAdmin(CustomModelAdmin):
@@ -34,7 +35,7 @@ class RecycleCreditRecordModelAdmin(CustomModelAdmin):
     search_fields = ['item_description', 'user__user_name']
 
 
-admin.site.register(RecycleCreditRecord, RecycleCreditRecordModelAdmin)
+admin_site.site.register(RecycleCreditRecord, RecycleCreditRecordModelAdmin)
 
 
 class RecycleCleaningRecordModelAdmin(CustomModelAdmin):
@@ -42,7 +43,7 @@ class RecycleCleaningRecordModelAdmin(CustomModelAdmin):
     search_fields = ['user__user_name', 'recycle_point__point_id', 'recycle_point__description']
 
 
-admin.site.register(RecycleCleaningRecord, RecycleCleaningRecordModelAdmin)
+admin_site.site.register(RecycleCleaningRecord, RecycleCleaningRecordModelAdmin)
 
 
 class FeedbackModelAdmin(CustomModelAdmin):
@@ -50,7 +51,7 @@ class FeedbackModelAdmin(CustomModelAdmin):
     raw_id_fields = ['poster']
 
 
-admin.site.register(Feedback, FeedbackModelAdmin)
+admin_site.site.register(Feedback, FeedbackModelAdmin)
 
 
 class EventImgModelAdmin(CustomModelAdmin):
@@ -58,7 +59,7 @@ class EventImgModelAdmin(CustomModelAdmin):
     search_fields = ['title', 'url', 'digest']
 
 
-admin.site.register(Event, EventImgModelAdmin)
+admin_site.site.register(Event, EventImgModelAdmin)
 
 
 class CommodityModelAdmin(CustomModelAdmin):
@@ -67,7 +68,7 @@ class CommodityModelAdmin(CustomModelAdmin):
     search_fields = ['title', 'description']
 
 
-admin.site.register(Commodity, CommodityModelAdmin)
+admin_site.site.register(Commodity, CommodityModelAdmin)
 
 
 class CommodityImageModelAdmin(CustomModelAdmin):
@@ -76,14 +77,14 @@ class CommodityImageModelAdmin(CustomModelAdmin):
     search_fields = ['commodity__title', 'commodity__description']
 
 
-admin.site.register(CommodityImage, CommodityImageModelAdmin)
+admin_site.site.register(CommodityImage, CommodityImageModelAdmin)
 
 
 class OrderModelAdmin(CustomModelAdmin):
-    readonly_fields = ['order_id']
+    readonly_fields = ['order_id', 'buyer', 'credit', 'quantity']
     list_filter = ['status']
     raw_id_fields = ['buyer']
     search_fields = ['order_id', 'buyer__user_name', 'title']
 
 
-admin.site.register(Order, OrderModelAdmin)
+admin_site.site.register(Order, OrderModelAdmin)

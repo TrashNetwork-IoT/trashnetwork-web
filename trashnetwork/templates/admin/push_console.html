@@ -1,0 +1,110 @@
+{% extends "admin/base_site.html" %}
+{% load admin_tools_menu_tags %}
+{% load staticfiles %}
+{% block extrahead %}
+    {{ block.super }}
+    <script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+    {{ media }}
+{% endblock %}
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}"/>
+    {{ media }}
+{% endblock %}
+{% block content %}
+    <p>Here you can push a notification to all users.</p>
+    <form>
+        <div class="module aligned">
+            <div class="form-row">
+                <div>
+                    <label class="required" for="id_title">Title:</label>
+                    <input type="text" name="title" class="vTextField"
+                           id="id_title" maxlength="20">
+                    <div class="help">Only available for Android</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label class="required" for="id_message">Message:</label>
+                    <textarea name="message" class="vLargeTextField" id="id_message"
+                              maxlength="50" rows="3" cols="30"></textarea>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label class="required" for="id_ttl">Time to live:</label>
+                    <input type="number" name="ttl" class="vIntegerField"
+                           id="id_ttl" maxlength="20" value="1">
+                    <span>Hours</span>
+                    <div class="help">How long will the offline message keep</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>CID:</label>
+                    <div id="id_cid" class="readonly">
+                        {{ cid }}
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Status:</label>
+                    <div id="id_status" class="readonly">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="submit-row">
+            <input type="button" value="Push" class="default" onclick="onBtnPushClick()">
+            <input type="button" value="External JPush Console" style="float: left"
+                   onclick="window.location='https://www.jiguang.cn/dev/#/app/list'">
+        </div>
+    </form>
+
+    <script type="text/javascript">
+        var cid = '{{ cid }}';
+        function onBtnPushClick() {
+            $('#id_status').css({color: 'black'});
+            $('#id_status').text('Pushing...');
+            $.ajax('push_console/api/push_notification', {
+                method: 'POST',
+                dataType: 'json',
+                data: {
+                    cid: cid,
+                    title: $('#id_title').val(),
+                    message: $('#id_message').val(),
+                    ttl: parseInt(parseFloat($('#id_ttl').val()) * 3600)
+                },
+                success: function (data) {
+                    $('#id_status').css({color: 'green'});
+                    $('#id_status').text(data.message);
+                    cid = data.new_cid;
+                    $('#id_cid').text(cid);
+                },
+                error: function (jqXHR, exception, http_err) {
+                    var msg = '';
+                    if (jqXHR.status === 0 || exception === 'timeout') {
+                        msg = 'Network is unavailable or timeouts';
+                    } else {
+                        var data = null;
+                        try {
+                            data = JSON.parse(jqXHR.responseText);
+                            msg = data.message;
+                            if (jqXHR.status === 500)
+                                msg = 'Server internal error';
+                        } catch (e) {
+                            console.error(e);
+                            msg = 'Unknown error';
+                        }
+                    }
+                    $('#id_status').css({color: 'red'});
+                    $('#id_status').text(msg);
+                },
+            });
+        }
+    </script>
+
+{% endblock %}
+
