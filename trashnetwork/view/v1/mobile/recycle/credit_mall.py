@@ -138,6 +138,15 @@ def get_orders(req: Request, order_status: str = None, start_time: str = None, e
     if order_status is not None and order_status != 'in_progress' and order_status != 'delivering' \
             and order_status != 'cancelled' and order_status != 'finished':
         raise NotFound()
+    if order_status == 'in_progress':
+        order_status = models.ORDER_IN_PROGRESS
+    elif order_status == 'delivering':
+        order_status = models.ORDER_DELIVERING
+    elif order_status == 'cancelled':
+        order_status = models.ORDER_CANCELLED
+    elif order_status == 'finished':
+        order_status = models.ORDER_FINISHED
+
     user = token_check(req=req)
     order_list = []
     for e in models.Order.objects.filter(buyer=user).filter(
