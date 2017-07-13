@@ -15,8 +15,8 @@ class TrashNetworkConfig(AppConfig):
         self.shutdown_signal = django.dispatch.Signal()
 
     def ready(self):
-        mqtt_broker_utils.init_client()
-        mqtt_broker_utils.connect_to_broker()
+        # mqtt_broker_utils.init_client()
+        # mqtt_broker_utils.connect_to_broker()
         scheduler_utils.init_scheduler()
 
         from trashnetwork import models
@@ -34,7 +34,7 @@ class TrashNetworkConfig(AppConfig):
         signal.signal(signal.SIGINT, self.on_server_shutdown)
 
     def on_server_shutdown(self, signal, frame):
-        mqtt_broker_utils.disconnect_from_broker()
+        # mqtt_broker_utils.disconnect_from_broker()
         scheduler_utils.stop_scheduler()
         self.shutdown_signal.send('system')
         sys.exit(0)

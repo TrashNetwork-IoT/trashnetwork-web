@@ -142,16 +142,20 @@ class RecycleAccount(models.Model):
             result = 'Garbage Collector - '
         return result + self.user_name
 
+    class Meta:
+        db_table = 'user'
+
 
 class RecycleCreditRecord(models.Model):
     user = models.ForeignKey(RecycleAccount, on_delete=models.CASCADE, null=False)
     item_description = models.CharField(null=False, max_length=100)
     credit = models.IntegerField(null=False, default=0)
-    timestamp = models.DateTimeField(auto_now_add=True, db_column='record_time')
+    timestamp = models.DateTimeField(auto_now_add=True, db_column='record_time', verbose_name=_('Record time'))
 
     class Meta:
         unique_together = ('user', 'timestamp')
         ordering = ['-timestamp']
+        db_table = 'credit_record'
 
     def __str__(self):
         return '%s - %s - %s' % (self.user.user_name, self.item_description, str(self.timestamp))
@@ -169,15 +173,19 @@ class RecyclePoint(models.Model):
     def __str__(self):
         return '#%d %s' % (self.point_id, self.description)
 
+    class Meta:
+        db_table = 'recycle_point'
+
 
 class RecycleCleaningRecord(models.Model):
     user = models.ForeignKey(RecycleAccount, on_delete=models.CASCADE, null=False)
     recycle_point = models.ForeignKey(RecyclePoint, on_delete=models.CASCADE, null=False)
-    timestamp = models.DateTimeField(auto_now_add=True, db_column='recycle_time')
+    timestamp = models.DateTimeField(auto_now_add=True, db_column='recycle_time', verbose_name=_('Recycle time'))
     bottle_num = models.IntegerField(null=True, blank=True)
 
     class Meta:
         ordering = ['-timestamp']
+        db_table = 'recycle_cleaning_record'
 
     def __str__(self):
         return '%s - %s - %s' % (self.user.user_name, self.recycle_point.description, str(self.timestamp))
@@ -185,12 +193,13 @@ class RecycleCleaningRecord(models.Model):
 
 class Feedback(models.Model):
     poster = models.ForeignKey(RecycleAccount, on_delete=models.CASCADE, null=True, blank=True)
-    timestamp = models.DateTimeField(auto_now_add=True, db_column='feedback_time')
+    timestamp = models.DateTimeField(auto_now_add=True, db_column='feedback_time', verbose_name=_('Feedback time'))
     title = models.CharField(max_length=60, null=False)
     text = models.TextField(null=False)
 
     class Meta:
         ordering = ['-timestamp']
+        db_table = 'feedback'
 
     def __str__(self):
         user_name = 'Anonymous User'
@@ -208,7 +217,7 @@ class OverwriteStorage(FileSystemStorage):
 
 class Event(models.Model):
     title = models.CharField(max_length=50, null=False)
-    timestamp = models.DateTimeField(auto_now_add=True, db_column='release_time')
+    timestamp = models.DateTimeField(auto_now_add=True, db_column='release_time', verbose_name=_('Release time'))
     digest = models.CharField(max_length=120, null=True, blank=True)
     event_image = models.ImageField(null=True, blank=True, upload_to='%s/events/assets/images' % settings.APP_NAME,
                                     storage=OverwriteStorage())
@@ -226,6 +235,7 @@ class Event(models.Model):
     class Meta:
         unique_together = ('title', 'timestamp')
         ordering = ['-timestamp']
+        db_table = 'event'
 
     def __str__(self):
         return '%s - %s' % (self.title, str(self.timestamp))
@@ -239,7 +249,7 @@ class Commodity(models.Model):
     commodity_id = models.BigAutoField(primary_key=True, null=False)
     title = models.CharField(max_length=100, null=False)
     description = DummyHtmlField(null=False)
-    timestamp = models.DateTimeField(auto_now_add=True, db_column='added_time')
+    timestamp = models.DateTimeField(auto_now_add=True, db_column='added_time', verbose_name=_('Added time'))
     credit = models.IntegerField(null=False)
     thumbnail = models.ImageField(null=True, blank=True,
                                   upload_to='%s/commodities/assets/thumbnails' % settings.APP_NAME,
@@ -272,6 +282,7 @@ class Commodity(models.Model):
     class Meta:
         unique_together = ('title', 'timestamp')
         ordering = ['-timestamp']
+        db_table = 'commodity'
 
     def __str__(self):
         return '%s - %s' % (self.title, str(self.timestamp))
@@ -288,6 +299,9 @@ class CommodityImage(models.Model):
     def __str__(self):
         return '%s - %s' % (self.commodity.title, str(self.image))
 
+    class Meta:
+        db_table = 'commodity_image'
+
 
 ORDER_CANCELLED = 'C'
 ORDER_DELIVERING = 'D'
@@ -298,7 +312,7 @@ ORDER_FINISHED = 'F'
 class Order(models.Model):
     order_id = models.CharField(max_length=24, primary_key=True)
     buyer = models.ForeignKey(RecycleAccount, on_delete=models.CASCADE, null=False)
-    timestamp = models.DateTimeField(auto_now_add=True, db_column='submit_time')
+    timestamp = models.DateTimeField(auto_now_add=True, db_column='submit_time', verbose_name=_('Submit time'))
     commodity_id = models.BigIntegerField(null=True, blank=True)
     title = models.CharField(max_length=100, null=False)
     credit = models.IntegerField(null=False)
@@ -318,3 +332,4 @@ class Order(models.Model):
 
     class Meta:
         ordering = ['-timestamp']
+        db_table = 'order'

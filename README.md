@@ -8,18 +8,32 @@ The web server of TrashNetwork project.
 + Redis
 + Python modules(It‘s recommended to install via `PyPI`):
   + pillow 
+
   + django
+
   + django-redis-cache
+
   + djangorestframework
+
   + hiredis
+
   + mysqlclient
+
   + paho-mqtt
+
   + geopy
+
   + apscheduler
+
   + django-jsoneditor
+
   + django-codemirror2
+
   + requests
+
   + django-admin-tools
+
+  + django-object-actions
 
 ## Build and Start
 

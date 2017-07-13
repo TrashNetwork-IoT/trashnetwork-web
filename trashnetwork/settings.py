@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'jsoneditor',
     'codemirror2',
+    'django_object_actions',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -98,6 +99,7 @@ DATABASES = {
         'USER': 'TrashNetwork',
         'PASSWORD': '4f5100635dc64621aa4ae256daae80046833ce8f',
         'HOST': 'localhost',
+        'CONN_MAX_AGE': 8 * 3600,   # 8 Hours
         'PORT': 3306,
     }
 }
