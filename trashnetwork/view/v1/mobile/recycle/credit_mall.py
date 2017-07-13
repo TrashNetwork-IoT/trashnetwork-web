@@ -4,7 +4,7 @@ import threading
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view
-from rest_framework.exceptions import ParseError
+from rest_framework.exceptions import ParseError, NotFound
 from rest_framework.request import Request
 from django.utils.translation import ugettext as _
 from json import dumps as to_json
@@ -17,10 +17,14 @@ from trashnetwork.view.v1.mobile.recycle.account import token_check
 
 
 @api_view(['GET'])
-def get_commodities(req: Request, keyword: str = None, start_time: str = None, end_time: str = None, limit_num: str = None):
+def get_commodities(req: Request, keyword: str = None, start_time: str = None, end_time: str = None,
+                    limit_num: str = None):
     commodity_list = []
-    for e in models.Commodity.objects.filter(view_utils.general_query_time_limit(end_time=end_time, start_time=start_time, title__icontains=keyword))[:int(limit_num)]:
-        commodity_list.append(view_utils.get_model_dict(e, excluded_fields=['description', 'stock', 'quantity_limit', 'type']))
+    for e in models.Commodity.objects.filter(
+            view_utils.general_query_time_limit(end_time=end_time, start_time=start_time, title__icontains=keyword))[
+             :int(limit_num)]:
+        commodity_list.append(
+            view_utils.get_model_dict(e, excluded_fields=['description', 'stock', 'quantity_limit', 'type']))
     if len(commodity_list) == 0:
         raise CheckException(status=status.HTTP_404_NOT_FOUND,
                              result_code=result_code.MR_COMMODITY_NOT_FOUND,
@@ -37,13 +41,15 @@ def get_commodity_detail(req: Request, commodity_id: str):
             commodity_images.append(view_utils.get_encoded_file(ci.image))
 
         e = models.Commodity.objects.get(commodity_id=commodity_id)
-        commodity = view_utils.get_model_dict(e, excluded_fields=['thumbnail'], modify_fields=dict(commodity_type='type'))
+        commodity = view_utils.get_model_dict(e, excluded_fields=['thumbnail'],
+                                              modify_fields=dict(commodity_type='type'))
         commodity['commodity_images'] = commodity_images
         return view_utils.get_json_response(commodity=commodity)
     except models.Commodity.DoesNotExist:
         raise CheckException(status=status.HTTP_404_NOT_FOUND,
                              result_code=result_code.MR_COMMODITY_NOT_FOUND,
                              message=_('Commodity not found'))
+
 
 commodity_lock_dict = {}
 lock_dict_lock = threading.Lock()
@@ -127,9 +133,16 @@ def new_order(req: Request):
 
 
 @api_view(['GET'])
-def get_orders(req: Request, order_status: str = None, start_time: str = None, end_time: str = None, limit_num: str = None):
+def get_orders(req: Request, order_status: str = None, start_time: str = None, end_time: str = None,
+               limit_num: str = None):
+    if order_status is not None and order_status != 'in_progress' and order_status != 'delivering' \
+            and order_status != 'cancelled' and order_status != 'finished':
+        raise NotFound()
+    user = token_check(req=req)
     order_list = []
-    for e in models.Order.objects.filter(view_utils.general_query_time_limit(end_time=end_time, start_time=start_time, status=order_status))[:int(limit_num)]:
+    for e in models.Order.objects.filter(buyer=user).filter(
+            view_utils.general_query_time_limit(end_time=end_time, start_time=start_time, status=order_status))[
+             :int(limit_num)]:
         order = view_utils.get_model_dict(e, excluded_fields=['buyer', 'delivery_address', 'delivery'])
         if e.delivery_address:
             order['delivery_address'] = json.loads(e.delivery_address)

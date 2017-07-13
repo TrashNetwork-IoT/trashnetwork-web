@@ -12,6 +12,10 @@ class DummyJsonField(models.TextField):
     pass
 
 
+class DummyHtmlField(models.TextField):
+    pass
+
+
 def preview_img_html(src: str, width: int = 400, margin_bottom: int = 0):
     if not src:
         return _('No image')
@@ -234,7 +238,7 @@ COMMODITY_TYPE_PHYSICAL = 'P'
 class Commodity(models.Model):
     commodity_id = models.BigAutoField(primary_key=True, null=False)
     title = models.CharField(max_length=100, null=False)
-    description = models.TextField(null=False)
+    description = DummyHtmlField(null=False)
     timestamp = models.DateTimeField(auto_now_add=True, db_column='added_time')
     credit = models.IntegerField(null=False)
     thumbnail = models.ImageField(null=True, blank=True,

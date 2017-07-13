@@ -1,7 +1,9 @@
 from django.contrib import admin
 from trashnetwork import admin_site
 from jsoneditor.forms import JSONEditor
+from codemirror2.widgets import CodeMirrorEditor
 from .models import *
+
 
 # Add all models here to show on admin page
 
@@ -9,6 +11,10 @@ from .models import *
 class CustomModelAdmin(admin.ModelAdmin):
     formfield_overrides = {
         DummyJsonField: {'widget': JSONEditor()},
+        DummyHtmlField: {'widget': CodeMirrorEditor(options={'mode': 'xml',
+                                                             'lineNumbers': True,
+                                                             'lineWrapping': True
+                                                             })}
     }
 
 

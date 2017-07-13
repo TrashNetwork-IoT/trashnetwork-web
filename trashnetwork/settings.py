@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     APP_NAME,
     'rest_framework',
     'jsoneditor',
+    'codemirror2',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -168,7 +169,7 @@ TN_CLEANING_REMINDER = {
 }
 
 TN_RECYCLE_CREDIT_RANK = {
-    'UPDATE_INTERVAL_MINUTES': 2
+    'UPDATE_INTERVAL_MINUTES': 5
 }
 
 # Internationalization
